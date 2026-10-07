@@ -1,0 +1,44 @@
+%% Diagrama de Classes — Rodovia Lanches
+%% Mostra as entidades de domínio e a hierarquia de papéis (Garcom, Cozinha,
+%% Balcao, Gerente herdam de Usuario).
+classDiagram
+    class Usuario {
+        +Long id
+        +String nome
+        +String telefone
+    }
+
+    class Garcom
+    class Cozinha
+    class Balcao
+    class Gerente
+
+    class Produto {
+        +Long id
+        +String nome
+        +Double preco
+        +Integer quantidade
+    }
+
+    class Pedido {
+        +Long id
+        +Usuario garcom
+        +Integer numeroMesa
+        +List~ItemPedido~ itens
+        +LocalDateTime criadoEm
+    }
+
+    class ItemPedido {
+        +Long id
+        +Produto produto
+        +Integer quantidade
+    }
+
+    Usuario <|-- Garcom
+    Usuario <|-- Cozinha
+    Usuario <|-- Balcao
+    Usuario <|-- Gerente
+
+    Pedido "1" --> "*" ItemPedido : contém
+    ItemPedido "*" --> "1" Produto : referencia
+    Pedido "*" --> "1" Garcom : registrado_por

@@ -1,0 +1,16 @@
+%% Sequência 1/3 — Garçom lança um pedido
+%% Mensagens descrevem ações de negócio, não detalhes técnicos.
+sequenceDiagram
+    actor Garcom
+    participant Interface as Interface
+    participant API
+    participant BD as Banco de Dados
+
+    Garcom->>Interface: monta o pedido (mesa, cliente, itens)
+    Garcom->>Interface: confirma envio
+    Interface->>API: envia novo pedido
+    API->>BD: registra pedido
+    API->>BD: atualiza estoque do produto
+    BD-->>API: confirma gravação
+    API-->>Interface: pedido criado e enviado para a cozinha
+    Interface-->>Garcom: exibe confirmação ao garçom

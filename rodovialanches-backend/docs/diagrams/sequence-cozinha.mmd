@@ -1,0 +1,19 @@
+%% Sequência 2/3 — Cozinha marca pedido como pronto
+sequenceDiagram
+    actor Cozinha
+    participant Interface as Interface
+    participant API
+    participant BD as Banco de Dados
+
+    Interface->>API: solicita lista de pedidos
+    API->>BD: busca pedidos pendentes
+    BD-->>API: devolve pedidos
+    API-->>Interface: envia pedidos
+    Interface-->>Cozinha: exibe fila da cozinha
+
+    Cozinha->>Interface: marca pedido como pronto
+    Interface->>API: informa novo status
+    API->>BD: atualiza status do pedido
+    BD-->>API: confirma atualização
+    API-->>Interface: status atualizado
+    Interface-->>Cozinha: remove pedido da fila

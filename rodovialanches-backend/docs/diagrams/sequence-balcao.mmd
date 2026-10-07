@@ -1,0 +1,19 @@
+%% Sequência 3/3 — Balcão registra o pagamento
+sequenceDiagram
+    actor Balcao as Balcão
+    participant Interface as Interface
+    participant API
+    participant BD as Banco de Dados
+
+    Interface->>API: solicita pedidos prontos
+    API->>BD: busca pedidos prontos para pagamento
+    BD-->>API: devolve pedidos
+    API-->>Interface: envia pedidos
+    Interface-->>Balcao: exibe pedidos no caixa
+
+    Balcao->>Interface: registra o pagamento
+    Interface->>API: informa pedido pago
+    API->>BD: atualiza status do pedido
+    BD-->>API: confirma atualização
+    API-->>Interface: pagamento registrado
+    Interface-->>Balcao: remove pedido do caixa
