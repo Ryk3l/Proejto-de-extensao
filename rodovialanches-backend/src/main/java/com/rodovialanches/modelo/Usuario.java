@@ -1,5 +1,6 @@
 package com.rodovialanches.modelo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 /**
@@ -19,6 +20,21 @@ public class Usuario {
     private String papel;
 
     private String telefone;
+
+    /**
+     * Senha do acesso ao sistema, guardada como hash (SHA-256 + salt).
+     * WRITE_ONLY: aceita a senha na entrada (login/cadastro), mas NUNCA
+     * é devolvida em nenhuma resposta da API.
+     */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String senha;
+
+    /** true se o acesso já tem senha — exposto para a tela do gerente ver quem já pode entrar. */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public boolean isTemSenha() { return senha != null && !senha.isBlank(); }
+
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

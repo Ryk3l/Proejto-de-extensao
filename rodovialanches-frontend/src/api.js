@@ -164,6 +164,44 @@ export async function removerIngredienteReceita(produtoId, receitaId){
   return { ok: false, message: message || 'Erro ao remover ingrediente.' }
 }
 
+// ===================== ACESSO AO SISTEMA (LOGIN) =====================
+
+/** Tenta entrar com nome + senha. Devolve { ok, usuario } ou { ok:false, message }. */
+export async function entrar({ nome, senha }){
+  const res = await fetch(`${API}/api/auth/login`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ nome, senha })
+  })
+  if (res.ok) return { ok: true, usuario: await res.json() }
+  const message = await res.text().catch(()=>'')
+  return { ok: false, message: message || 'Nome ou senha inválidos.' }
+}
+
+/** Cadastra um acesso ao sistema (papel + senha) — página do gerente. */
+export async function criarAcesso({ nome, telefone, papel, senha }){
+  const res = await fetch(`${API}/api/usuarios/acesso`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ nome, telefone, papel, senha })
+  })
+  if (res.ok) return { ok: true, usuario: await res.json() }
+  const message = await res.text().catch(()=>'')
+  return { ok: false, message: message || 'Erro ao cadastrar acesso.' }
+}
+
+/** Define/troca a senha do acesso de um usuário existente. */
+export async function definirSenhaUsuario(id, senha){
+  const res = await fetch(`${API}/api/usuarios/${id}`,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ senha })
+  })
+  if (res.ok) return { ok: true, usuario: await res.json() }
+  const message = await res.text().catch(()=>'')
+  return { ok: false, message: message || 'Erro ao definir senha.' }
+}
+
 // ===================== USUARIOS =====================
 
 export async function buscarUsuarios(){

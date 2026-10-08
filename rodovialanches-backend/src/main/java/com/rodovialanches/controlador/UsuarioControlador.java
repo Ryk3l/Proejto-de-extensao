@@ -3,6 +3,7 @@ package com.rodovialanches.controlador;
 import com.rodovialanches.modelo.Usuario;
 import com.rodovialanches.repositorio.PedidoRepositorio;
 import com.rodovialanches.repositorio.UsuarioRepositorio;
+import com.rodovialanches.util.SenhaUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,8 @@ import java.util.List;
  *  GET    /              → lista todos os usuários
  *  POST   /garcons       → cadastra um garçom
  *  POST   /clientes      → cadastra um cliente (com nome + telefone)
- *  PUT    /{id}          → atualiza nome/telefone
+ *  POST   /acesso        → cadastra um acesso ao sistema (papel + senha)
+ *  PUT    /{id}          → atualiza nome/telefone e, opcionalmente, a senha
  *  DELETE /{id}          → remove usuário (bloqueado se houver pedidos vinculados)
  */
 @RestController
@@ -80,6 +82,42 @@ public class UsuarioControlador {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRepositorio.save(usuario));
     }
 
+    /**CREATE
+     * Cadastra um ACESSO ao sistema (papel à escolha + senha).
+     * Usado pela página "Cadastro de Acesso" (restrita ao gerente).
+     * Exige nome único (o login é feito por nome) e guarda apenas o hash da senha.
+     */
+    @PostMapping("/acesso")
+    public ResponseEntity<?> criarAcesso(@RequestBody Usuario usuario) {
+        if (usuario.getNome() == null || usuario.getNome().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                    .body("Nome é obrigatório.");
+        }
+        String papel = usuario.getPapel() != null ? usuario.getPapel().trim().toUpperCase() : "";
+        if (!List.of("GARCOM", "COZINHA", "BALCAO", "GERENTE").contains(papel)) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                    .body("Papel inválido. Use GARCOM, COZINHA, BALCAO ou GERENTE.");
+        }
+        if (usuario.getSenha() == null || usuario.getSenha().trim().length() < 4) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                    .body("A senha é obrigatória e deve ter pelo menos 4 caracteres.");
+        }
+        String nome = usuario.getNome().trim();
+        if (usuarioRepositorio.existsByNomeIgnoreCase(nome)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                    .body("Já existe um usuário com esse nome.");
+        }
+        usuario.setNome(nome);
+        usuario.setPapel(papel);
+        usuario.setTelefone(usuario.getTelefone() != null ? usuario.getTelefone().trim() : null);
+        usuario.setSenha(SenhaUtil.criar(usuario.getSenha().trim()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRepositorio.save(usuario));
+    }
+
     /**UPDATE
      * Atualiza um usuário existente.
      * Permite alterar o nome e telefone do usuário.
@@ -97,6 +135,17 @@ public class UsuarioControlador {
                                     .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
                                     .body((Object) "Já existe um cliente com esse nome e telefone.");
                         }
+                    }
+                    // Senha do acesso: se veio no corpo, faz a troca (com hash);
+                    // se não veio, mantém a atual — editar nome/telefone nunca apaga a senha.
+                    if (usuario.getSenha() != null && !usuario.getSenha().isBlank()) {
+                        String novaSenha = usuario.getSenha().trim();
+                        if (novaSenha.length() < 4) {
+                            return ResponseEntity.badRequest()
+                                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                                    .body((Object) "A senha deve ter pelo menos 4 caracteres.");
+                        }
+                        existente.setSenha(SenhaUtil.criar(novaSenha));
                     }
                     existente.setNome(novoNome);
                     if (usuario.getTelefone() != null) existente.setTelefone(novoTelefone);

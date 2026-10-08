@@ -244,6 +244,122 @@ body, html, #root {
   border-radius: 999px;
   font-size: 0.9rem;
 }
+/* ---------- Acesso ao sistema (login) ---------- */
+.tela-acesso {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.tela-acesso-card {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(24, 44, 89, 0.08);
+}
+.tela-acesso-card h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+}
+.tela-acesso-card p {
+  margin: 0 0 20px;
+  color: #666;
+}
+.mensagem-erro {
+  margin-top: 12px;
+  color: #d32f2f;
+  font-size: 0.95rem;
+}
+
+/* ---------- Formulários (padrão dos cadastros) ---------- */
+.rotulo-form {
+  display: block;
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 12px;
+}
+.campo-form {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid #dbe4ff;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+  background: #fff;
+}
+.campo-form:focus {
+  outline: none;
+  border-color: #2e77ff;
+}
+.form-grid {
+  display: grid;
+  gap: 4px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 8px;
+}
+
+/* ---------- Topbar: sessão e sair ---------- */
+.topbar-usuario {
+  font-size: 0.9rem;
+  color: #2f4cca;
+  background: #eef3ff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.topbar-sair {
+  padding: 8px 14px;
+  border: 1px solid #d32f2f;
+  background: #d32f2f;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+.topbar-sair:hover {
+  background: #b71c1c;
+}
+
+/* ---------- Status de acesso (Cadastro de Acesso) ---------- */
+.status-acesso {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.status-acesso.ativo {
+  background: #e7f6e9;
+  color: #2e7d32;
+}
+.status-acesso.inativo {
+  background: #fdecea;
+  color: #c62828;
+}
+
+/* ---------- Acesso negado (guarda de permissão) ---------- */
+.acesso-negado {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.acesso-negado p {
+  color: #666;
+  margin: 0 0 8px;
+}
+.acesso-negado .action-button {
+  margin-top: 0;
+}
+
 @media (max-width: 720px) {
   .topbar { padding: 10px 14px; }
   .topbar h1 { font-size: 1.1rem; }

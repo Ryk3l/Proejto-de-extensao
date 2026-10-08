@@ -10,4 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface UsuarioRepositorio extends JpaRepository<Usuario, Long> {
     boolean existsByNomeIgnoreCaseAndTelefoneAndPapel(String nome, String telefone, String papel);
+    boolean existsByNomeIgnoreCase(String nome);
 }

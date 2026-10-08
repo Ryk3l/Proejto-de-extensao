@@ -14,6 +14,7 @@ import com.rodovialanches.repositorio.MateriaPrimaRepositorio;
 import com.rodovialanches.repositorio.ProdutoRepositorio;
 import com.rodovialanches.repositorio.ReceitaRepositorio;
 import com.rodovialanches.repositorio.UsuarioRepositorio;
+import com.rodovialanches.util.SenhaUtil;
 
 // CommandLineRunner é uma interface do Spring Boot. Qualquer bean que a
 // implemente tem seu método run() executado uma única vez logo após a
@@ -75,6 +76,17 @@ public class CarregadorInicial implements CommandLineRunner {
                     novoUsuario(5L, "Cliente1", "CLIENTE")
             );
             usuarioRepositorio.saveAll(usuarios);
+        }
+
+        // ===== Bloco 1b: Senha padrão para acessos ainda sem senha =====
+        // Usuários criados antes do login com senha (ou sem senha definida)
+        // recebem a senha padrão "123456" — o gerente troca pela página
+        // "Cadastro de Acesso". Idempotente: só age quando não há senha.
+        for (Usuario u : usuarioRepositorio.findAll()) {
+            if (!"CLIENTE".equals(u.getPapel()) && !SenhaUtil.temSenha(u.getSenha())) {
+                u.setSenha(SenhaUtil.criar("123456"));
+                usuarioRepositorio.save(u);
+            }
         }
 
         // ===== Bloco 2: Matérias-Primas =====
