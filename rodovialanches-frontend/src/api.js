@@ -2,7 +2,10 @@
 // Cada função aqui devolve dados já tratados (ok/erro) para as páginas usarem
 // sem precisar repetir lógica de fetch/headers/erros.
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+// Base da API: usa o MESMO hostname da página — "localhost" quando aberto
+// nesta máquina e o IP da rede local quando aberto em outro dispositivo.
+// Assim o sistema funciona liberado na rede sem ajuste em cada cliente.
+const API = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8080`
 
 /** Rótulos amigáveis em português para os status do pedido (vindos da enum StatusPedido). */
 export const ROTULOS_STATUS_PEDIDO = {

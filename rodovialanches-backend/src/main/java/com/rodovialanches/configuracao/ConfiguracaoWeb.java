@@ -5,7 +5,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Permite que o frontend rodando em http://localhost:5173 chame os endpoints /api/**.
+ * Permite que o frontend (http://localhost:5173 ou o IP da rede local,
+ * ex.: http://192.168.0.107:5173) chame os endpoints /api/**.
  * Sem isso, o navegador bloquearia as requisições por política de mesma origem.
  *
  * IMPORTANTE: Não usar @EnableWebMvc aqui. Essa anotação desativa toda a
@@ -19,7 +20,11 @@ public class ConfiguracaoWeb implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173")
+                // Qualquer origem: localhost (nesta máquina) e IP da rede
+                // local (outros dispositivos). Não se usa allowedOrigins("*")
+                // porque o Spring proíbe "*" junto de allowCredentials(true);
+                // allowedOriginPatterns("*") permite qualquer origem com segurança.
+                .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
