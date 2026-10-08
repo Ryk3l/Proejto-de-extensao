@@ -1,5 +1,6 @@
 import React from 'react'
 import { listarPedidos, atualizarStatusPedido, rotuloStatus } from '../api'
+import IconeMoto from '../componentes/IconeMoto'
 
 /**
  * Página da COZINHA.
@@ -38,7 +39,11 @@ export default function Cozinha(){
         <div className="section-grid">
           {pedidos.map((p, idx)=> (
             <div key={p.id} className="order-card">
-              <div><strong>Pedido #{idx + 1}</strong> - {p.garcom?.nome || 'Garçom'}{p.numeroMesa ? ` - Mesa ${p.numeroMesa}` : ''}</div>
+              <div><strong>Pedido #{idx + 1}</strong> - {p.garcom?.nome || 'Garçom'}{p.delivery ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f57c00', fontWeight: 'bold', marginLeft: '4px' }}>
+                  <IconeMoto size={14} /> Delivery
+                </span>
+              ) : (p.numeroMesa ? ` - Mesa ${p.numeroMesa}` : '')}</div>
               <div className="badge">{rotuloStatus(p.status)}</div>
               <ul className="order-items">
                 {p.itens.map(it=> <li key={it.id}>{it.produto.nome} x{it.quantidade}</li>)}

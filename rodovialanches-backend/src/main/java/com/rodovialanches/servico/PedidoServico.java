@@ -69,7 +69,11 @@ public class PedidoServico {
         }
         pedido.setCliente(cliente);
 
-        if (pedido.getNumeroMesa() == null || pedido.getNumeroMesa() < 1 || pedido.getNumeroMesa() > 8) {
+        boolean ehDelivery = Boolean.TRUE.equals(pedido.getDelivery());
+        if (ehDelivery) {
+            // Delivery não se destina a mesa nenhuma.
+            pedido.setNumeroMesa(null);
+        } else if (pedido.getNumeroMesa() == null || pedido.getNumeroMesa() < 1 || pedido.getNumeroMesa() > 8) {
             throw new IllegalArgumentException("Número de mesa inválido (deve ser entre 1 e 8)");
         }
 

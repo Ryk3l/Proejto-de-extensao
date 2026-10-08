@@ -1,5 +1,6 @@
 import React from 'react'
 import { listarPedidos, atualizarStatusPedido, rotuloStatus } from '../api'
+import IconeMoto from '../componentes/IconeMoto'
 
 /**
  * Página do BALCÃO (caixa).
@@ -42,7 +43,11 @@ export default function Balcao(){
                 <div><strong>Pedido #{idx + 1}</strong></div>
                 <div>Garçom: {p.garcom?.nome || 'Desconhecido'}</div>
                 <div>Cliente: {p.cliente?.nome || 'Desconhecido'}</div>
-                <div>Mesa: {p.numeroMesa || 'N/A'}</div>
+                <div>{p.delivery ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f57c00', fontWeight: 'bold' }}>
+                    <IconeMoto size={14} /> Delivery
+                  </span>
+                ) : `Mesa: ${p.numeroMesa || 'N/A'}`}</div>
                 <div>Status: {rotuloStatus(p.status)}</div>
                 <ul className="order-items">
                   {p.itens.map(it=> <li key={it.id}>{it.produto.nome} x{it.quantidade}</li>)}

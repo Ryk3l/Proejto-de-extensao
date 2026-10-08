@@ -28,6 +28,10 @@ public class Pedido {
     @Column(name = "numero_mesa")
     private Integer numeroMesa;
 
+    // true = entrega como delivery (sem mesa); false/NULL = pedido de mesa
+    @Column(name = "delivery")
+    private Boolean delivery = false;
+
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ItemPedido> itens = new ArrayList<>();
@@ -46,6 +50,8 @@ public class Pedido {
     public void setCliente(Usuario cliente) { this.cliente = cliente; }
     public Integer getNumeroMesa() { return numeroMesa; }
     public void setNumeroMesa(Integer numeroMesa) { this.numeroMesa = numeroMesa; }
+    public Boolean getDelivery() { return delivery; }
+    public void setDelivery(Boolean delivery) { this.delivery = delivery; }
     public List<ItemPedido> getItens() { return itens; }
     public void setItens(List<ItemPedido> itens) { this.itens = itens; }
     public StatusPedido getStatus() { return status; }

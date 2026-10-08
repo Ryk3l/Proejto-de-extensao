@@ -1,5 +1,6 @@
 import React from 'react'
 import { buscarProdutosComDisponibilidade, buscarUsuarios, criarPedido, criarUsuario, listarPedidos, removerPedidosDoGarcom } from '../api'
+import IconeMoto from '../componentes/IconeMoto'
 
 /**
  * Página do GARÇOM.
@@ -18,6 +19,8 @@ export default function Garcom(){
   const [garcomSelecionado, setGarcomSelecionado] = React.useState('')
   const [clienteSelecionado, setClienteSelecionado] = React.useState('')
   const [mesaSelecionada, setMesaSelecionada] = React.useState('1')
+  // true = pedido é delivery (entrega de moto) em vez de mesa
+  const [entregaDelivery, setEntregaDelivery] = React.useState(false)
   const [novoClienteNome, setNovoClienteNome] = React.useState('')
   const [novoClienteTelefone, setNovoClienteTelefone] = React.useState('')
   const [mensagem, setMensagem] = React.useState('')
@@ -161,7 +164,8 @@ export default function Garcom(){
     const pedido = {
       garcom: { id: garcomSelecionado },
       cliente: { id: clienteSelecionado },
-      numeroMesa: Number(mesaSelecionada),
+      numeroMesa: entregaDelivery ? null : Number(mesaSelecionada),
+      delivery: entregaDelivery,
       itens: itens.map(i=>({produto: {id: i.produto.id}, quantidade: i.quantidade}))
     }
     const resultado = await criarPedido(pedido)
@@ -278,17 +282,40 @@ export default function Garcom(){
       </div>
       <div className="tables-section">
         <h3>Mesas</h3>
-        <div className="tables-grid">
-          {Array.from({length:8}, (_, i) => i + 1).map(num => (
-            <button
-              key={num}
-              type="button"
-              className={"table-box" + (mesaSelecionada === String(num) ? ' selected-table' : '')}
-              onClick={() => setMesaSelecionada(String(num))}
-            >
-              Mesa {num}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch', flexWrap: 'wrap' }}>
+          <div
+            className="tables-grid"
+            style={{ flex: '1 1 420px', minWidth: 0, opacity: entregaDelivery ? 0.55 : 1 }}
+          >
+            {Array.from({length:8}, (_, i) => i + 1).map(num => (
+              <button
+                key={num}
+                type="button"
+                className={"table-box" + (mesaSelecionada === String(num) && !entregaDelivery ? ' selected-table' : '')}
+                onClick={() => { setMesaSelecionada(String(num)); setEntregaDelivery(false) }}
+              >
+                Mesa {num}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="table-box"
+            aria-pressed={entregaDelivery}
+            onClick={() => setEntregaDelivery(v => !v)}
+            style={{
+              flex: '0 0 170px',
+              minWidth: '150px',
+              background: entregaDelivery ? '#f57c00' : '#fff',
+              color: entregaDelivery ? '#fff' : '#f57c00',
+              border: `2px solid ${entregaDelivery ? '#e65100' : '#f57c00'}`
+            }}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+              <IconeMoto size={24} />
+              Delivery
+            </span>
+          </button>
         </div>
       </div>
       <div className="section-grid">
@@ -305,7 +332,16 @@ export default function Garcom(){
             const totalPedido = p.itens.reduce((soma, it) => soma + it.produto.preco * it.quantidade, 0)
             return (
               <div key={p.id} className="order-card">
-                <div><strong>Pedido #{idx + 1}</strong> - Mesa {p.numeroMesa || 'N/A'}</div>
+                <div>
+                  <strong>Pedido #{idx + 1}</strong> -{' '}
+                  {p.delivery ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f57c00', fontWeight: 'bold' }}>
+                      <IconeMoto size={16} /> Delivery
+                    </span>
+                  ) : (
+                    `Mesa ${p.numeroMesa || 'N/A'}`
+                  )}
+                </div>
                 <div>Garçom: {p.garcom?.nome || 'Garçom'}</div>
                 <div>Total: R$ {totalPedido.toFixed(2)}</div>
                 <ul className="order-items">
@@ -316,7 +352,7 @@ export default function Garcom(){
                   style={{ background: '#388e3c', marginTop: '8px' }}
                   onClick={() => marcarEntregue(p.id)}
                 >
-                  Entreguei na mesa
+                  {p.delivery ? 'Entregue ao cliente' : 'Entreguei na mesa'}
                 </button>
               </div>
             )

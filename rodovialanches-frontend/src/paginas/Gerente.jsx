@@ -1,5 +1,6 @@
 import React from 'react'
 import { listarPedidos, buscarProdutosComDisponibilidade, buscarMateriasPrimas, buscarReceita, removerPedido, removerProduto, criarProduto, atualizarProduto, adicionarIngredienteReceita, atualizarIngredienteReceita, removerIngredienteReceita, rotuloStatus } from '../api'
+import IconeMoto from '../componentes/IconeMoto'
 
 /**
  * Página do GERENTE - Versão integrada com listas de ingredientes.
@@ -624,7 +625,11 @@ export default function Gerente(){
                     Data: {formatarDataPedido(p)}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', marginTop: '8px', fontSize: '0.85rem' }}>
-                    <div>Mesa: <strong>{p.numeroMesa ?? 'N/A'}</strong></div>
+                    <div>{p.delivery ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f57c00', fontWeight: 'bold' }}>
+                        <IconeMoto size={14} /> Delivery
+                      </span>
+                    ) : <>Mesa: <strong>{p.numeroMesa ?? 'N/A'}</strong></>}</div>
                     <div>Garçom: <strong>{p.garcom?.nome || '-'}</strong></div>
                     <div>Cliente: <strong>{p.cliente?.nome || '-'}</strong></div>
                     <div>Total: <strong style={{ color: '#1976d2' }}>R$ {total.toFixed(2)}</strong></div>
