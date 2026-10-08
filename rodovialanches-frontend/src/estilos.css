@@ -13,26 +13,103 @@ body, html, #root {
 }
 .app-shell {
   margin: 0 auto;
-  padding: 20px;
 }
-.top-nav {
+
+/* Topo da aplicação: botão do menu + título no canto superior esquerdo */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  padding: 10px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e1e7ff;
 }
-.top-nav button {
+.topbar h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  white-space: nowrap;
+}
+.topbar .badge {
+  margin-left: auto;
+}
+.menu-toggle {
+  padding: 8px 14px;
+  border: 1px solid #2e77ff;
+  background: #2e77ff;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.menu-toggle:hover {
+  background: #1644d8;
+}
+
+/* Corpo: barra lateral vertical + conteúdo */
+.app-corpo {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px 20px;
+}
+.sidebar {
+  position: sticky;
+  top: 60px;
+  flex: 0 0 230px;
+  width: 230px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e1e7ff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(24, 44, 89, 0.08);
+  padding: 16px 12px;
+  transition: width 0.2s ease, flex-basis 0.2s ease, padding 0.2s ease, border-width 0.2s ease, opacity 0.15s ease;
+}
+.app-shell.sidebar-minimizada .sidebar {
+  flex-basis: 0;
+  width: 0;
+  padding-top: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  border-width: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* largura fixa para o texto não espreitar durante a animação de fechar */
+  min-width: 206px;
+}
+.side-nav button {
+  width: 100%;
   padding: 10px 16px;
   border: 1px solid #2e77ff;
   background: #2e77ff;
   color: #fff;
   border-radius: 6px;
   cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  text-align: left;
 }
-.top-nav button.active {
+.side-nav button:hover {
+  background: #1f5ad1;
+}
+.side-nav button.active {
   background: #1644d8;
 }
 .page-card {
+  flex: 1;
+  min-width: 0;
   background: #fff;
   padding: 32px;
   border-radius: 16px;
@@ -168,8 +245,9 @@ body, html, #root {
   font-size: 0.9rem;
 }
 @media (max-width: 720px) {
-  .app-shell { padding: 14px; }
-  .top-nav { justify-content: center; }
+  .topbar { padding: 10px 14px; }
+  .topbar h1 { font-size: 1.1rem; }
+  .app-corpo { padding: 12px 14px 14px; gap: 10px; }
   .tables-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .page-card { padding: 18px; }
 }
