@@ -6,7 +6,6 @@ import Gerente from './paginas/Gerente'
 import CadastroGarcons from './paginas/CadastroGarcons'
 import CadastroClientes from './paginas/CadastroClientes'
 import CadastroMateriasPrimas from './paginas/CadastroMateriasPrimas'
-import GerenciarReceita from './paginas/GerenciarReceita'
 import './estilos.css'
 
 /**
@@ -16,6 +15,19 @@ import './estilos.css'
  */
 export default function App(){
   const [pagina, setPagina] = React.useState('garcom')
+
+  // Navegação via hash da URL: permite que outras páginas (ex: Gerente)
+  // abram uma seção usando window.location.hash = 'cadastro-materias-primas'
+  React.useEffect(()=>{
+    const aoMudarHash = () => {
+      const h = window.location.hash.replace('#','')
+      if (h) setPagina(h)
+    }
+    window.addEventListener('hashchange', aoMudarHash)
+    aoMudarHash()
+    return () => window.removeEventListener('hashchange', aoMudarHash)
+  },[])
+
   const rotulosPagina = {
     garcom: 'Garçom',
     cozinha: 'Cozinha',
@@ -24,7 +36,6 @@ export default function App(){
     'cadastro-garcom': 'Cadastro de Garçons',
     'cadastro-cliente': 'Cadastro de Clientes',
     'cadastro-materias-primas': 'Matérias-Primas',
-    'gerenciar-receita': 'Fichas Técnicas',
   }
   return (
     <div className="app-shell">
@@ -40,7 +51,6 @@ export default function App(){
         <button className={pagina==='cadastro-garcom' ? 'active' : ''} onClick={()=>setPagina('cadastro-garcom')}>Cadastro Garçom</button>
         <button className={pagina==='cadastro-cliente' ? 'active' : ''} onClick={()=>setPagina('cadastro-cliente')}>Cadastro Cliente</button>
         <button className={pagina==='cadastro-materias-primas' ? 'active' : ''} onClick={()=>setPagina('cadastro-materias-primas')}>Matérias-Primas</button>
-        <button className={pagina==='gerenciar-receita' ? 'active' : ''} onClick={()=>setPagina('gerenciar-receita')}>Fichas Técnicas</button>
       </div>
       <div className="page-card">
         {pagina==='garcom' && <Garcom />}
@@ -50,7 +60,6 @@ export default function App(){
         {pagina==='cadastro-garcom' && <CadastroGarcons />}
         {pagina==='cadastro-cliente' && <CadastroClientes />}
         {pagina==='cadastro-materias-primas' && <CadastroMateriasPrimas />}
-        {pagina==='gerenciar-receita' && <GerenciarReceita />}
       </div>
     </div>
   )

@@ -126,7 +126,7 @@ export async function removerMateriaPrima(id){
   return { ok: false, message: message || 'Erro ao remover matéria-prima.' }
 }
 
-// ===================== RECEITAS (FICHA TÉCNICA) =====================
+// ===================== RECEITAS (LISTA DE INGREDIENTES) =====================
 
 export async function buscarReceita(produtoId){
   return listaSegura(`${API}/api/produtos/${produtoId}/receita`)

@@ -33,6 +33,11 @@ public class Receita {
     public void setProduto(Produto produto) { this.produto = produto; }
     public MateriaPrima getMateriaPrima() { return materiaPrima; }
     public void setMateriaPrima(MateriaPrima materiaPrima) { this.materiaPrima = materiaPrima; }
+    /**
+     * Expõe o id da matéria-prima em nível plano no JSON (ex: "materiaPrimaId": 1).
+     * O front usa esse campo para exibir o ingrediente e validar duplicatas.
+     */
+    public Long getMateriaPrimaId() { return materiaPrima != null ? materiaPrima.getId() : null; }
     public BigDecimal getQuantidade() { return quantidade; }
     public void setQuantidade(BigDecimal quantidade) { this.quantidade = quantidade; }
     public String getObservacao() { return observacao; }

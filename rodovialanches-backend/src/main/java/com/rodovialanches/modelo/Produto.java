@@ -1,5 +1,6 @@
 package com.rodovialanches.modelo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,10 @@ public class Produto {
 
     private Double preco;
 
+    // @JsonIgnore: evita ciclo de serialização (Produto → Receita → Produto → ...),
+    // que derrubava a requisição com StackOverflow. A ficha técnica é acessada
+    // pelo endpoint dedicado GET /api/produtos/{id}/receita.
+    @JsonIgnore
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Receita> receita = new ArrayList<>();
 

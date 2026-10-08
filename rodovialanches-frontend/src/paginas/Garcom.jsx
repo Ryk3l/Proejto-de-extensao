@@ -99,7 +99,7 @@ export default function Garcom(){
     const temReceita = produto.temReceita ?? false
 
     if (!temReceita) {
-      setMensagem(`${produto.nome} não tem ficha técnica cadastrada. Não pode ser vendido.`)
+      setMensagem(`${produto.nome} não tem lista de ingredientes cadastrada. Não pode ser vendido.`)
       setTimeout(()=>setMensagem(''), 3000)
       return
     }
@@ -147,7 +147,7 @@ export default function Garcom(){
     // Validar se todos os itens têm receita e estoque suficiente
     for (const item of itens) {
       if (!item.produto.temReceita) {
-        setMensagem(`${item.produto.nome} não tem ficha técnica. Não pode ser vendido.`)
+        setMensagem(`${item.produto.nome} não tem lista de ingredientes. Não pode ser vendido.`)
         setTimeout(()=>setMensagem(''), 3000)
         return
       }
@@ -336,7 +336,7 @@ export default function Garcom(){
                 <div><strong>{p.nome}</strong></div>
                 <div>R$ {p.preco.toFixed(2)}</div>
                 <div style={{ color: semReceita ? '#f57c00' : semEstoque ? '#d32f2f' : '#2e7d32', fontWeight: 'bold' }}>
-                  {semReceita ? 'Sem ficha técnica' : semEstoque ? 'Indisponível' : `Disponível: ${qtdDisponivel}`}
+                  {semReceita ? 'Sem lista de ingredientes' : semEstoque ? 'Indisponível' : `Disponível: ${qtdDisponivel}`}
                 </div>
                 <button
                   onClick={()=>adicionarItem(p)}
