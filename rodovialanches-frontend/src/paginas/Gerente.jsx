@@ -62,11 +62,6 @@ export default function Gerente(){
 
   React.useEffect(()=>{ carregar(); const t = setInterval(carregar,3000); return ()=>clearInterval(t); },[])
 
-  // Navegação via hash da URL (o App.jsx escuta o evento hashchange)
-  const navegarPara = (pagina) => {
-    window.location.hash = pagina
-  }
-
   function mostrarMensagem(texto){
     setMensagem(texto)
     setTimeout(()=>setMensagem(''), 6000)
@@ -230,7 +225,7 @@ export default function Gerente(){
           <option value="">-- selecione --</option>
           {materiasPrimas.map(mp => (
             <option key={mp.id} value={mp.id}>
-              {mp.nome} ({mp.unidade}) — Estoque: {Number(mp.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+              {mp.nome} ({mp.unidade}) — Estoque: {Number(mp.quantidade).toLocaleString('pt-BR', { maximumFractionDigits: 3 })}
             </option>
           ))}
         </select>
@@ -518,40 +513,6 @@ export default function Gerente(){
         <div className="badge">Atualizado: {ultimaAtualizacao || '-'}</div>
       </div>
 
-      {/* ===== AÇÕES RÁPIDAS ===== */}
-      <div className="stats-card" style={{ 
-        background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)', 
-        border: '2px solid #ddd', 
-        borderRadius: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <h3 style={{ margin: '0 0 8px 0', color: '#333' }}>Ações Rápidas de Estoque</h3>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>
-              Gerencie insumos e listas de ingredientes para controlar a disponibilidade dos produtos
-            </p>
-          </div>
-          <button
-            type="button"
-            className="action-button"
-            style={{ 
-              background: '#1976d2', 
-              color: 'white', 
-              padding: '12px 24px', 
-              fontSize: '1rem', 
-              fontWeight: 'bold',
-              boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)'
-            }}
-            onClick={() => navegarPara('cadastro-materias-primas')}
-          >
-            Matérias-Primas / Insumos
-          </button>
-        </div>
-        <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #ccc', fontSize: '0.8rem', color: '#888' }}>
-          <strong>Fluxo:</strong> 1. Cadastre insumos (Matérias-Primas) → 2. Crie o produto já com as matérias-primas → 3. Venda!
-        </div>
-      </div>
-
       {mensagem && (
         <div className="stats-card" style={{ 
           background: mensagem.includes('Erro') || mensagem.includes('Atenção') ? '#fff3e0' : '#e8f5e9', 
@@ -718,14 +679,16 @@ export default function Gerente(){
               </div>
             )}
             {linhasNovo.map((linha, idx) => campoIngrediente('novo', linha, idx, linhasNovo.length === 1))}
-            <button
-              type="button"
-              className="secondary"
-              onClick={() => adicionarLinha('novo')}
-              style={{ padding: '8px 12px' }}
-            >
-              + Adicionar ingrediente
-            </button>
+            <div style={{ textAlign: 'center' }}>
+              <button
+                type="button"
+                className="action-button secondary"
+                onClick={() => adicionarLinha('novo')}
+                style={{ padding: '8px 16px', background: '#7c83ff' }}
+              >
+                + Adicionar ingrediente
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="action-button" style={{ padding: '10px 20px', fontSize: '1rem' }}>
@@ -977,7 +940,7 @@ export default function Gerente(){
                                     <div>
                                       <strong>{mp?.nome || 'Ingrediente'}</strong>
                                       <div style={{ fontSize: '0.85rem', color: '#555', marginTop: '6px', paddingLeft: '12px', borderLeft: '3px solid #e0e0e0', display: 'grid', gap: '4px' }}>
-                                        <div>Estoque: {estoqueDisponivel.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} {mp?.unidade || ''}</div>
+                                        <div>Estoque: {estoqueDisponivel.toLocaleString('pt-BR', { maximumFractionDigits: 3 })} {mp?.unidade || ''}</div>
                                         <div>Preço de custo: {mp?.precoCusto != null ? `R$ ${Number(mp.precoCusto).toFixed(2)} / ${mp.unidade || ''}` : '—'}</div>
                                       </div>
                                       <div style={{ display: 'flex', gap: '6px', marginTop: '8px', justifyContent: 'flex-end' }}>

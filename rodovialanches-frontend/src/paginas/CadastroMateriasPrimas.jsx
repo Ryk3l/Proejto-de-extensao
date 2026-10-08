@@ -1,12 +1,13 @@
 import React from 'react'
-import { buscarMateriasPrimas, criarMateriaPrima, atualizarMateriaPrima, removerMateriaPrima, ajustarEstoqueMateriaPrima, definirQuantidadeMateriaPrima } from '../api'
+import { buscarMateriasPrimas, criarMateriaPrima, atualizarMateriaPrima, removerMateriaPrima, definirQuantidadeMateriaPrima } from '../api'
 
 /**
- * Página de CADASTRO DE MATÉRIAS-PRIMAS (CRUD completo + gestão de estoque).
+ * Página DE CADASTRO DE MATÉRIAS-PRIMAS (CRUD completo).
  *
- * CREATE — cadastra nova matéria-prima (nome, unidade, estoque inicial, preço custo).
- * READ   — lista todas as matérias-primas com estoque atual.
- * UPDATE — edita nome, unidade, preço custo; ajusta estoque (delta ou absoluto).
+ * CREATE — cadastra nova matéria-prima (nome, unidade, estoque inicial, custo unitário).
+ * READ   — lista todas com estoque, custo unitário e valor total em estoque.
+ * UPDATE — edita nome, unidade, custo unitário e a QUANTIDADE EM ESTOQUE direto
+ *          (o PUT principal não altera quantidade; usa-se o endpoint próprio).
  * DELETE — remove matéria-prima (bloqueado se usada em alguma receita).
  */
 export default function CadastroMateriasPrimas() {
@@ -15,7 +16,6 @@ export default function CadastroMateriasPrimas() {
   const [mensagem, setMensagem] = React.useState('')
   const [editandoId, setEditandoId] = React.useState(null)
   const [ultimaAtualizacao, setUltimaAtualizacao] = React.useState(null)
-  const [ajusteEstoque, setAjusteEstoque] = React.useState({ id: null, tipo: 'delta', valor: '' }) // delta | absoluto
 
   // READ
   async function carregarMaterias() {
@@ -60,11 +60,17 @@ export default function CadastroMateriasPrimas() {
     }
   }
 
-  // UPDATE (dados cadastrais)
+  // UPDATE — dados cadastrais + estoque (alteração direta da quantidade)
   async function aoAtualizar(e) {
     e.preventDefault()
     if (!formulario.nome.trim() || !formulario.unidade.trim()) {
       setMensagem('Por favor, informe nome e unidade')
+      setTimeout(() => setMensagem(''), 3000)
+      return
+    }
+    const quantidade = Number(formulario.quantidade)
+    if (formulario.quantidade === '' || Number.isNaN(quantidade) || quantidade < 0) {
+      setMensagem('Informe um estoque válido (0 ou maior)')
       setTimeout(() => setMensagem(''), 3000)
       return
     }
@@ -77,6 +83,14 @@ export default function CadastroMateriasPrimas() {
         precoCusto
       })
       if (resultado.ok) {
+        // O PUT principal não altera quantidade — usa o endpoint próprio de estoque.
+        const estoque = await definirQuantidadeMateriaPrima(editandoId, quantidade)
+        if (!estoque.ok) {
+          setMensagem(estoque.message || 'Erro ao atualizar o estoque')
+          carregarMaterias()
+          setTimeout(() => setMensagem(''), 4000)
+          return
+        }
         setFormulario({ nome: '', unidade: 'UN', quantidade: '', precoCusto: '' })
         setEditandoId(null)
         setMensagem('Matéria-prima atualizada com sucesso!')
@@ -87,37 +101,6 @@ export default function CadastroMateriasPrimas() {
       setTimeout(() => setMensagem(''), 3000)
     } catch (error) {
       setMensagem('Erro ao atualizar matéria-prima')
-      setTimeout(() => setMensagem(''), 3000)
-    }
-  }
-
-  // AJUSTE DE ESTOQUE (delta ou absoluto)
-  async function aoAjustarEstoque(e) {
-    e.preventDefault()
-    if (ajusteEstoque.valor === '' || Number.isNaN(Number(ajusteEstoque.valor))) {
-      setMensagem('Informe um valor válido')
-      setTimeout(() => setMensagem(''), 3000)
-      return
-    }
-    try {
-      setMensagem('Ajustando estoque...')
-      const valor = Number(ajusteEstoque.valor)
-      let resultado
-      if (ajusteEstoque.tipo === 'delta') {
-        resultado = await ajustarEstoqueMateriaPrima(ajusteEstoque.id, valor)
-      } else {
-        resultado = await definirQuantidadeMateriaPrima(ajusteEstoque.id, valor)
-      }
-      if (resultado.ok) {
-        setMensagem('Estoque ajustado com sucesso!')
-        setAjusteEstoque({ id: null, tipo: 'delta', valor: '' })
-        carregarMaterias()
-      } else {
-        setMensagem(resultado.message || 'Erro ao ajustar estoque')
-      }
-      setTimeout(() => setMensagem(''), 3000)
-    } catch (error) {
-      setMensagem('Erro ao ajustar estoque')
       setTimeout(() => setMensagem(''), 3000)
     }
   }
@@ -154,14 +137,6 @@ export default function CadastroMateriasPrimas() {
   const cancelarEdicao = () => {
     setEditandoId(null)
     setFormulario({ nome: '', unidade: 'UN', quantidade: '', precoCusto: '' })
-  }
-
-  const abrirAjusteEstoque = (mp, tipo) => {
-    setAjusteEstoque({ id: mp.id, tipo, valor: '' })
-  }
-
-  const cancelarAjusteEstoque = () => {
-    setAjusteEstoque({ id: null, tipo: 'delta', valor: '' })
   }
 
   return (
@@ -202,51 +177,32 @@ export default function CadastroMateriasPrimas() {
                 <option value="ML">ML (mililitro)</option>
               </select>
             </label>
-            {!editandoId && (
-              <>
-                <label>
-                  Estoque inicial
-                  <input
-                    type="number"
-                    step="0.001"
-                    min="0"
-                    name="quantidade"
-                    value={formulario.quantidade}
-                    onChange={aoMudarInput}
-                    placeholder="0"
-                    style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
-                  />
-                </label>
-                <label>
-                  Preço custo (R$)
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    name="precoCusto"
-                    value={formulario.precoCusto}
-                    onChange={aoMudarInput}
-                    placeholder="0,00"
-                    style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
-                  />
-                </label>
-              </>
-            )}
-            {editandoId && (
-              <label>
-                Preço custo (R$)
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  name="precoCusto"
-                  value={formulario.precoCusto}
-                  onChange={aoMudarInput}
-                  placeholder="0,00"
-                  style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
-                />
-              </label>
-            )}
+            <label>
+              {editandoId ? 'Quantidade em estoque' : 'Estoque inicial'}
+              <input
+                type="number"
+                step="0.001"
+                min="0"
+                name="quantidade"
+                value={formulario.quantidade}
+                onChange={aoMudarInput}
+                placeholder="0"
+                style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
+              />
+            </label>
+            <label>
+              Custo unitário (R$ / {formulario.unidade})
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                name="precoCusto"
+                value={formulario.precoCusto}
+                onChange={aoMudarInput}
+                placeholder="0,00"
+                style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
+              />
+            </label>
           </div>
           <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
             <button type="submit" className="action-button" disabled={!formulario.nome.trim() || !formulario.unidade.trim()}>
@@ -262,31 +218,6 @@ export default function CadastroMateriasPrimas() {
         </form>
       </div>
 
-      {/* AJUSTE DE ESTOQUE (modal inline) */}
-      {ajusteEstoque.id && (
-        <div className="stats-card" style={{ border: '2px solid #1976d2', background: '#e3f2fd' }}>
-          <h3>Ajuste de Estoque - {ajusteEstoque.tipo === 'delta' ? 'Entrada/Saída (Delta)' : 'Definir Valor Absoluto'}</h3>
-          <form onSubmit={aoAjustarEstoque}>
-            <label style={{ display: 'block', marginBottom: '8px' }}>
-              {ajusteEstoque.tipo === 'delta' ? 'Valor (pode ser negativo para baixa)' : 'Nova quantidade absoluta'}
-              <input
-                type="number"
-                step="0.001"
-                value={ajusteEstoque.valor}
-                onChange={e => setAjusteEstoque({ ...ajusteEstoque, valor: e.target.value })}
-                placeholder={ajusteEstoque.tipo === 'delta' ? 'Ex: 10 ou -5' : 'Ex: 100'}
-                style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
-                autoFocus
-              />
-            </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button type="submit" className="action-button">Confirmar</button>
-              <button type="button" className="action-button secondary" onClick={cancelarAjusteEstoque}>Cancelar</button>
-            </div>
-          </form>
-        </div>
-      )}
-
       {/* READ */}
       <div>
         <h3>Matérias-Primas Cadastradas</h3>
@@ -301,12 +232,17 @@ export default function CadastroMateriasPrimas() {
                   <span className="badge">{mp.unidade}</span>
                 </div>
                 <div style={{ fontSize: '1.1rem', fontWeight: 'bold', margin: '8px 0', color: mp.quantidade <= 0 ? '#d32f2f' : '#2e7d32' }}>
-                  Estoque: {Number(mp.quantidade).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} {mp.unidade}
+                  Estoque: {Number(mp.quantidade).toLocaleString('pt-BR', { maximumFractionDigits: 3 })} {mp.unidade}
                 </div>
                 {mp.precoCusto != null && (
-                  <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                    Custo unit.: R$ {Number(mp.precoCusto).toFixed(2)}
-                  </div>
+                  <>
+                    <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                      Custo unitário: R$ {Number(mp.precoCusto).toFixed(2)} / {mp.unidade}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                      Custo total em estoque: R$ {(Number(mp.quantidade) * Number(mp.precoCusto)).toFixed(2)}
+                    </div>
+                  </>
                 )}
                 <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
                   <button
@@ -315,20 +251,6 @@ export default function CadastroMateriasPrimas() {
                     style={{ flex: 1, minWidth: '80px' }}
                   >
                     Editar
-                  </button>
-                  <button
-                    className="action-button secondary"
-                    onClick={() => abrirAjusteEstoque(mp, 'delta')}
-                    style={{ flex: 1, minWidth: '80px', background: '#f57c00' }}
-                  >
-                    + / - Estoque
-                  </button>
-                  <button
-                    className="action-button secondary"
-                    onClick={() => abrirAjusteEstoque(mp, 'absoluto')}
-                    style={{ flex: 1, minWidth: '80px', background: '#1976d2' }}
-                  >
-                    Definir Estoque
                   </button>
                   <button
                     className="action-button secondary"
