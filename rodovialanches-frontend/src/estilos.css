@@ -1,3 +1,7 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: Inter, system-ui, sans-serif;
   color: #222;
@@ -8,7 +12,6 @@ body, html, #root {
   min-height: 100%;
 }
 .app-shell {
-  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -142,4 +145,6 @@ body, html, #root {
 @media (max-width: 720px) {
   .app-shell { padding: 14px; }
   .top-nav { justify-content: center; }
+  .tables-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .page-card { padding: 18px; }
 }

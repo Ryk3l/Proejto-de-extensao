@@ -160,6 +160,13 @@ export default function Gerente(){
     limparLinhas(chave)
   }
 
+  // Lista de ingredientes de cada produto começa OCULTA (economiza espaço na página).
+  // O botão Exibir/Ocultar no título do card mostra ou esconde o conteúdo da lista.
+  const [listasExibidas, setListasExibidas] = React.useState({})
+  const alternarLista = (produtoId) => {
+    setListasExibidas(prev => ({ ...prev, [produtoId]: !prev[produtoId] }))
+  }
+
   // Ao escolher a matéria-prima, a unidade do campo volta para a unidade-base dela.
   const selecionarMateriaPrima = (chave, idx, mpId) => {
     setLinhasIngrediente(prev => {
@@ -715,6 +722,7 @@ export default function Gerente(){
               const custo = calcularCustoReceita(p.id)
               const margem = custo > 0 && p.preco > 0 ? (((p.preco - custo) / p.preco) * 100).toFixed(1) : null
               const linhasP = linhasDe(p.id)
+              const listaVisivel = listasExibidas[p.id] ?? semReceita
 
               let statusLabel, statusColor, statusBg
               if (semReceita) {
@@ -812,7 +820,20 @@ export default function Gerente(){
                       )}
 
                       <div style={{ borderTop: '1px solid #eee', paddingTop: '12px', marginTop: '8px' }}>
-                        <h4 style={{ margin: '0 0 8px 0', color: '#333' }}>Lista de Ingredientes ({receitaAtual.length} itens)</h4>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <h4 style={{ margin: 0, color: '#333' }}>Lista de Ingredientes ({receitaAtual.length} itens)</h4>
+                          <button
+                            type="button"
+                            className="secondary"
+                            onClick={() => alternarLista(p.id)}
+                            style={{ padding: '4px 12px', marginTop: 0, fontSize: '0.85rem' }}
+                          >
+                            {listaVisivel ? 'Ocultar' : 'Exibir'}
+                          </button>
+                        </div>
+
+                        {listaVisivel && (
+                          <>
 
                         <div style={{ 
                           background: '#fafafa', 
@@ -953,6 +974,8 @@ export default function Gerente(){
                               )
                             })}
                           </div>
+                        )}
+                          </>
                         )}
                       </div>
                     </>
