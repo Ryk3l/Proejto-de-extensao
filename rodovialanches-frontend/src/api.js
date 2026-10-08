@@ -178,12 +178,12 @@ export async function entrar({ nome, senha }){
   return { ok: false, message: message || 'Nome ou senha inválidos.' }
 }
 
-/** Cadastra um acesso ao sistema (papel + senha) — página do gerente. */
-export async function criarAcesso({ nome, telefone, papel, senha }){
+/** Cadastra um acesso ao sistema (papel + CPF + senha) — página do gerente. */
+export async function criarAcesso({ nome, telefone, cpf, papel, senha }){
   const res = await fetch(`${API}/api/usuarios/acesso`,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ nome, telefone, papel, senha })
+    body:JSON.stringify({ nome, telefone, cpf, papel, senha })
   })
   if (res.ok) return { ok: true, usuario: await res.json() }
   const message = await res.text().catch(()=>'')
@@ -200,6 +200,18 @@ export async function definirSenhaUsuario(id, senha){
   if (res.ok) return { ok: true, usuario: await res.json() }
   const message = await res.text().catch(()=>'')
   return { ok: false, message: message || 'Erro ao definir senha.' }
+}
+
+/** Define/troca o CPF do acesso de um usuário existente. */
+export async function definirCpfUsuario(id, cpf){
+  const res = await fetch(`${API}/api/usuarios/${id}`,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ cpf })
+  })
+  if (res.ok) return { ok: true, usuario: await res.json() }
+  const message = await res.text().catch(()=>'')
+  return { ok: false, message: message || 'Erro ao definir CPF.' }
 }
 
 // ===================== USUARIOS =====================

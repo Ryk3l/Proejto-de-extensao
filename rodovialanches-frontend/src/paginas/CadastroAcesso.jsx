@@ -1,5 +1,5 @@
 import React from 'react'
-import { buscarUsuarios, criarAcesso, definirSenhaUsuario, removerUsuario } from '../api'
+import { buscarUsuarios, criarAcesso, definirSenhaUsuario, definirCpfUsuario, removerUsuario } from '../api'
 
 const ROTULOS_PAPEL = {
   GARCOM: 'Garçom',
@@ -18,11 +18,21 @@ function mascaraTelefone(valor){
   return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
 }
 
+/** Máscara de CPF enquanto digita: 000.000.000-00 (11 dígitos). */
+function mascaraCpf(valor){
+  const d = (valor || '').replace(/\D/g, '').slice(0, 11)
+  if (!d) return ''
+  if (d.length <= 3) return d
+  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`
+  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`
+}
+
 /**
  * Página CADASTRO DE ACESSO (restrita ao GERENTE).
- * - Cadastra acessos ao sistema (nome + papel + senha).
+ * - Cadastra acessos ao sistema (nome + CPF + papel + senha).
  * - Lista os acessos existentes com o status (tem senha ou não).
- * - Permite definir/trocar a senha e remover acessos.
+ * - Permite definir/trocar a senha, editar o CPF e remover acessos.
  * Clientes não aparecem aqui: eles não entram no sistema.
  */
 export default function CadastroAcesso(){
@@ -30,12 +40,16 @@ export default function CadastroAcesso(){
   const [ultimaAtualizacao, setUltimaAtualizacao] = React.useState(null)
   const [aviso, setAviso] = React.useState(null) // { texto, erro }
 
-  const [form, setForm] = React.useState({ nome: '', telefone: '', papel: 'GARCOM', senha: '', repetirSenha: '' })
+  const [form, setForm] = React.useState({ nome: '', telefone: '', cpf: '', papel: 'GARCOM', senha: '', repetirSenha: '' })
 
   // Edição de senha de um usuário existente (id em edição ou null)
   const [editandoSenhaId, setEditandoSenhaId] = React.useState(null)
   const [novaSenha, setNovaSenha] = React.useState('')
   const [repetirNovaSenha, setRepetirNovaSenha] = React.useState('')
+
+  // Edição de CPF de um usuário existente (id em edição ou null)
+  const [editandoCpfId, setEditandoCpfId] = React.useState(null)
+  const [novoCpf, setNovoCpf] = React.useState('')
 
   function mostrar(texto, erro = false){
     setAviso({ texto, erro })
@@ -56,23 +70,29 @@ export default function CadastroAcesso(){
       setForm(f => ({ ...f, telefone: mascaraTelefone(value) }))
       return
     }
+    if (name === 'cpf') {
+      setForm(f => ({ ...f, cpf: mascaraCpf(value) }))
+      return
+    }
     setForm(f => ({ ...f, [name]: value }))
   }
 
   async function aoCriar(e){
     e.preventDefault()
     if (!form.nome.trim()) return mostrar('Informe o nome do acesso.', true)
+    if (form.cpf.replace(/\D/g, '').length !== 11) return mostrar('CPF incompleto — use o formato 000.000.000-00.', true)
     if (form.senha.trim().length < 4) return mostrar('A senha deve ter pelo menos 4 caracteres.', true)
     if (form.senha !== form.repetirSenha) return mostrar('As senhas não conferem.', true)
 
     const resultado = await criarAcesso({
       nome: form.nome.trim(),
       telefone: form.telefone.trim() || undefined,
+      cpf: form.cpf,
       papel: form.papel,
       senha: form.senha,
     })
     if (resultado.ok) {
-      setForm({ nome: '', telefone: '', papel: 'GARCOM', senha: '', repetirSenha: '' })
+      setForm({ nome: '', telefone: '', cpf: '', papel: 'GARCOM', senha: '', repetirSenha: '' })
       mostrar(`Acesso de "${resultado.usuario.nome}" cadastrado com sucesso!`)
       carregar()
     } else {
@@ -92,6 +112,19 @@ export default function CadastroAcesso(){
       carregar()
     } else {
       mostrar(resultado.message || 'Erro ao definir senha.', true)
+    }
+  }
+
+  async function aoSalvarCpf(id){
+    if (novoCpf.replace(/\D/g, '').length !== 11) return mostrar('CPF incompleto — use o formato 000.000.000-00.', true)
+    const resultado = await definirCpfUsuario(id, novoCpf)
+    if (resultado.ok) {
+      setEditandoCpfId(null)
+      setNovoCpf('')
+      mostrar('CPF atualizado com sucesso!')
+      carregar()
+    } else {
+      mostrar(resultado.message || 'Erro ao atualizar CPF.', true)
     }
   }
 
@@ -127,6 +160,18 @@ export default function CadastroAcesso(){
                 value={form.nome}
                 onChange={aoMudarCampo}
                 placeholder="Nome de quem vai entrar"
+              />
+            </label>
+            <label className="rotulo-form">
+              CPF
+              <input
+                type="text"
+                className="campo-form"
+                name="cpf"
+                value={form.cpf}
+                onChange={aoMudarCampo}
+                placeholder="000.000.000-00"
+                inputMode="numeric"
               />
             </label>
             <label className="rotulo-form">
@@ -188,6 +233,7 @@ export default function CadastroAcesso(){
               <div key={u.id} className="order-card">
                 <div><strong>{u.nome}</strong></div>
                 <div>Papel: {ROTULOS_PAPEL[u.papel] || u.papel}</div>
+                <div>CPF: {u.cpf || '-'}</div>
                 <div>Telefone: {u.telefone || '-'}</div>
                 <div style={{ marginTop: '6px' }}>
                   <span className={'status-acesso ' + (u.temSenha ? 'ativo' : 'inativo')}>
@@ -223,18 +269,49 @@ export default function CadastroAcesso(){
                       </button>
                     </div>
                   </div>
+                ) : editandoCpfId === u.id ? (
+                  <div style={{ marginTop: '10px' }}>
+                    <input
+                      type="text"
+                      className="campo-form"
+                      value={novoCpf}
+                      onChange={e => setNovoCpf(mascaraCpf(e.target.value))}
+                      placeholder="000.000.000-00"
+                      inputMode="numeric"
+                      autoFocus
+                    />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button className="action-button" style={{ flex: 1 }} onClick={() => aoSalvarCpf(u.id)}>Salvar</button>
+                      <button
+                        className="action-button secondary"
+                        style={{ flex: 1 }}
+                        onClick={() => { setEditandoCpfId(null); setNovoCpf('') }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <div>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                      <button
+                        className="action-button secondary"
+                        style={{ flex: 1, fontSize: '0.9rem', padding: '8px' }}
+                        onClick={() => { setEditandoSenhaId(u.id); setNovaSenha(''); setRepetirNovaSenha('') }}
+                      >
+                        {u.temSenha ? 'Trocar senha' : 'Definir senha'}
+                      </button>
+                      <button
+                        className="action-button secondary"
+                        style={{ flex: 1, fontSize: '0.9rem', padding: '8px' }}
+                        onClick={() => { setEditandoCpfId(u.id); setNovoCpf(u.cpf || '') }}
+                      >
+                        Editar CPF
+                      </button>
+                    </div>
                     <button
                       className="action-button secondary"
-                      style={{ flex: 1, fontSize: '0.9rem', padding: '8px' }}
-                      onClick={() => { setEditandoSenhaId(u.id); setNovaSenha(''); setRepetirNovaSenha('') }}
-                    >
-                      {u.temSenha ? 'Trocar senha' : 'Definir senha'}
-                    </button>
-                    <button
-                      className="action-button secondary"
-                      style={{ flex: 1, fontSize: '0.9rem', padding: '8px', background: '#d32f2f' }}
+                      style={{ width: '100%', marginTop: '8px', fontSize: '0.9rem', padding: '8px', background: '#d32f2f' }}
                       onClick={() => aoRemover(u.id, u.nome)}
                     >
                       Remover

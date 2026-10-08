@@ -18,8 +18,8 @@ import java.util.List;
  *  GET    /              → lista todos os usuários
  *  POST   /garcons       → cadastra um garçom
  *  POST   /clientes      → cadastra um cliente (com nome + telefone)
- *  POST   /acesso        → cadastra um acesso ao sistema (papel + senha)
- *  PUT    /{id}          → atualiza nome/telefone e, opcionalmente, a senha
+ *  POST   /acesso        → cadastra um acesso ao sistema (papel + CPF + senha)
+ *  PUT    /{id}          → atualiza nome/telefone e, opcionalmente, CPF e senha
  *  DELETE /{id}          → remove usuário (bloqueado se houver pedidos vinculados)
  */
 @RestController
@@ -83,9 +83,10 @@ public class UsuarioControlador {
     }
 
     /**CREATE
-     * Cadastra um ACESSO ao sistema (papel à escolha + senha).
+     * Cadastra um ACESSO ao sistema (papel à escolha + CPF + senha).
      * Usado pela página "Cadastro de Acesso" (restrita ao gerente).
-     * Exige nome único (o login é feito por nome) e guarda apenas o hash da senha.
+     * Exige nome único (o login é feito por nome) e CPF único com 11 dígitos;
+     * guarda apenas o hash da senha.
      */
     @PostMapping("/acesso")
     public ResponseEntity<?> criarAcesso(@RequestBody Usuario usuario) {
@@ -105,6 +106,21 @@ public class UsuarioControlador {
                     .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
                     .body("A senha é obrigatória e deve ter pelo menos 4 caracteres.");
         }
+        String cpf = usuario.getCpf() != null ? usuario.getCpf().trim() : "";
+        String cpfDigitos = cpf.replaceAll("\\D", "");
+        if (cpfDigitos.length() != 11) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                    .body("CPF incompleto. Use o formato 000.000.000-00.");
+        }
+        boolean cpfJaCadastrado = usuarioRepositorio.findAll().stream()
+                .filter(u -> u.getCpf() != null && !u.getCpf().isBlank())
+                .anyMatch(u -> u.getCpf().replaceAll("\\D", "").equals(cpfDigitos));
+        if (cpfJaCadastrado) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                    .body("Já existe um usuário com esse CPF.");
+        }
         String nome = usuario.getNome().trim();
         if (usuarioRepositorio.existsByNomeIgnoreCase(nome)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -114,13 +130,14 @@ public class UsuarioControlador {
         usuario.setNome(nome);
         usuario.setPapel(papel);
         usuario.setTelefone(usuario.getTelefone() != null ? usuario.getTelefone().trim() : null);
+        usuario.setCpf(cpf);
         usuario.setSenha(SenhaUtil.criar(usuario.getSenha().trim()));
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRepositorio.save(usuario));
     }
 
     /**UPDATE
      * Atualiza um usuário existente.
-     * Permite alterar o nome e telefone do usuário.
+     * Permite alterar nome, telefone e, opcionalmente, CPF e senha do acesso.
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody Usuario usuario) {
@@ -146,6 +163,26 @@ public class UsuarioControlador {
                                     .body((Object) "A senha deve ter pelo menos 4 caracteres.");
                         }
                         existente.setSenha(SenhaUtil.criar(novaSenha));
+                    }
+                    // CPF: se veio no corpo, valida e troca; se não veio, mantém o atual.
+                    if (usuario.getCpf() != null && !usuario.getCpf().isBlank()) {
+                        String novoCpf = usuario.getCpf().trim();
+                        String digitos = novoCpf.replaceAll("\\D", "");
+                        if (digitos.length() != 11) {
+                            return ResponseEntity.badRequest()
+                                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                                    .body((Object) "CPF incompleto. Use o formato 000.000.000-00.");
+                        }
+                        boolean duplicado = usuarioRepositorio.findAll().stream()
+                                .filter(u -> u.getId() != null && !u.getId().equals(id))
+                                .filter(u -> u.getCpf() != null && !u.getCpf().isBlank())
+                                .anyMatch(u -> u.getCpf().replaceAll("\\D", "").equals(digitos));
+                        if (duplicado) {
+                            return ResponseEntity.status(HttpStatus.CONFLICT)
+                                    .contentType(MediaType.parseMediaType("text/plain; charset=UTF-8"))
+                                    .body((Object) "Já existe um usuário com esse CPF.");
+                        }
+                        existente.setCpf(novoCpf);
                     }
                     existente.setNome(novoNome);
                     if (usuario.getTelefone() != null) existente.setTelefone(novoTelefone);

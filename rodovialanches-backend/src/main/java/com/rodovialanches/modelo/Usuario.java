@@ -21,6 +21,9 @@ public class Usuario {
 
     private String telefone;
 
+    /** CPF do usuário, guardado com máscara 000.000.000-00. */
+    private String cpf;
+
     /**
      * Senha do acesso ao sistema, guardada como hash (SHA-256 + salt).
      * WRITE_ONLY: aceita a senha na entrada (login/cadastro), mas NUNCA
@@ -44,4 +47,6 @@ public class Usuario {
     public void setPapel(String papel) { this.papel = papel; }
     public String getTelefone() { return telefone; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
+    public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
 }
