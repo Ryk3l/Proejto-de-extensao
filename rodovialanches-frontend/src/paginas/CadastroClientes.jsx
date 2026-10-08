@@ -2,6 +2,19 @@ import React from 'react'
 import { buscarUsuarios, criarUsuario, atualizarUsuario, removerUsuario } from '../api'
 
 /**
+ * Máscara de telefone enquanto digita, no formato (DD) NUMERO.
+ * "11987654321" → "(11) 98765-4321" (10 ou 11 dígitos).
+ */
+function mascaraTelefone(valor){
+  const d = (valor || '').replace(/\D/g, '').slice(0, 11)
+  if (!d) return ''
+  if (d.length <= 2) return `(${d}`
+  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+}
+
+/**
  * Página de CADASTRO DE CLIENTES (CRUD completo).
  *
  * CREATE — cadastra novo cliente (papel="CLIENTE") com nome + telefone.
@@ -36,6 +49,12 @@ export default function CadastroClientes() {
       setTimeout(() => setMensagem(''), 3000)
       return
     }
+    const digitosTelefone = formulario.telefone.replace(/\D/g, '')
+    if (digitosTelefone.length < 10 || digitosTelefone.length > 11) {
+      setMensagem('Telefone incompleto — use o formato (DD) 99999-9999.')
+      setTimeout(() => setMensagem(''), 3000)
+      return
+    }
     try {
       setMensagem('Cadastrando cliente...')
       const resultado = await criarUsuario({ nome: formulario.nome, telefone: formulario.telefone, papel: 'CLIENTE' })
@@ -58,6 +77,12 @@ export default function CadastroClientes() {
     e.preventDefault()
     if (!formulario.nome.trim() || !formulario.telefone.trim()) {
       setMensagem('Por favor, informe nome e telefone')
+      setTimeout(() => setMensagem(''), 3000)
+      return
+    }
+    const digitosTelefone = formulario.telefone.replace(/\D/g, '')
+    if (digitosTelefone.length < 10 || digitosTelefone.length > 11) {
+      setMensagem('Telefone incompleto — use o formato (DD) 99999-9999.')
       setTimeout(() => setMensagem(''), 3000)
       return
     }
@@ -100,12 +125,13 @@ export default function CadastroClientes() {
   }
 
   const aoMudarInput = (e) => {
-    setFormulario({ ...formulario, [e.target.name]: e.target.value })
+    const valor = e.target.name === 'telefone' ? mascaraTelefone(e.target.value) : e.target.value
+    setFormulario({ ...formulario, [e.target.name]: valor })
   }
 
   const iniciarEdicao = (cliente) => {
     setEditandoId(cliente.id)
-    setFormulario({ nome: cliente.nome, telefone: cliente.telefone || '' })
+    setFormulario({ nome: cliente.nome, telefone: mascaraTelefone(cliente.telefone || '') })
   }
 
   const cancelarEdicao = () => {
@@ -156,7 +182,7 @@ export default function CadastroClientes() {
               </button>
             )}
           </div>
-          {mensagem && <div style={{ marginTop: '12px', color: mensagem.includes('Erro') ? '#d32f2f' : '#388e3c' }}>{mensagem}</div>}
+          {mensagem && <div style={{ marginTop: '12px', color: (mensagem.includes('Erro') || mensagem.includes('incompleto') || mensagem.includes('informe')) ? '#d32f2f' : '#388e3c' }}>{mensagem}</div>}
         </form>
       </div>
 

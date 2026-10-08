@@ -114,6 +114,7 @@ public class PedidoServico {
             }
 
             it.setProduto(produto);
+            it.setPrecoUnitario(produto.getPreco()); // congela o preço no momento da venda
             it.setPedido(pedido);
         }
         return pedidoRepositorio.save(pedido);

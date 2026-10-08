@@ -1,6 +1,24 @@
 import React from 'react'
-import { buscarProdutosComDisponibilidade, buscarUsuarios, criarPedido, criarUsuario, listarPedidos, removerPedidosDoGarcom } from '../api'
+import { buscarProdutosComDisponibilidade, buscarUsuarios, criarPedido, criarUsuario, listarPedidos } from '../api'
 import IconeMoto from '../componentes/IconeMoto'
+
+/**
+ * Máscara de telefone enquanto digita, no formato (DD) NUMERO.
+ * "11987654321" → "(11) 98765-4321" (10 ou 11 dígitos).
+ */
+function mascaraTelefone(valor){
+  const d = (valor || '').replace(/\D/g, '').slice(0, 11)
+  if (!d) return ''
+  if (d.length <= 2) return `(${d}`
+  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`
+  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+}
+
+/** Minúsculas sem acento — para a busca de cliente ignorar acentos ("jose" acha "José"). */
+function semAcento(txt){
+  return (txt || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
 
 /**
  * Página do GARÇOM.
@@ -9,7 +27,6 @@ import IconeMoto from '../componentes/IconeMoto'
  * - Mostra os pedidos que estão "Prontos para pagamento" (vindos da cozinha)
  *   para o garçom saber quais já pode levar ao balcão.
  * - Permite cadastrar cliente rapidamente sem sair da tela.
- * - Permite limpar todos os pedidos de um garçom (necessário antes de excluir).
  */
 export default function Garcom(){
   const [produtos, setProdutos] = React.useState([])
@@ -18,6 +35,9 @@ export default function Garcom(){
   const [pedidosProntos, setPedidosProntos] = React.useState([])
   const [garcomSelecionado, setGarcomSelecionado] = React.useState('')
   const [clienteSelecionado, setClienteSelecionado] = React.useState('')
+  // busca de cliente por texto (substitui o select) e aba de cadastro rápido (fechada por padrão)
+  const [buscaCliente, setBuscaCliente] = React.useState('')
+  const [mostrarCadastroCliente, setMostrarCadastroCliente] = React.useState(false)
   const [mesaSelecionada, setMesaSelecionada] = React.useState('1')
   // true = pedido é delivery (entrega de moto) em vez de mesa
   const [entregaDelivery, setEntregaDelivery] = React.useState(false)
@@ -75,14 +95,26 @@ export default function Garcom(){
       setTimeout(()=>setMensagem(''), 3000)
       return
     }
+    const digitosTelefone = novoClienteTelefone.replace(/\D/g, '')
+    if (digitosTelefone.length < 10 || digitosTelefone.length > 11) {
+      setMensagem('Telefone incompleto — use o formato (DD) 99999-9999.')
+      setTimeout(()=>setMensagem(''), 3000)
+      return
+    }
     try {
       setMensagem('Cadastrando cliente...')
-      const resultado = await criarUsuario({ nome: novoClienteNome, telefone: novoClienteTelefone, papel: 'CLIENTE' })
+      const nomeCadastrado = novoClienteNome.trim()
+      const resultado = await criarUsuario({ nome: nomeCadastrado, telefone: novoClienteTelefone, papel: 'CLIENTE' })
       if (resultado.ok) {
         setNovoClienteNome('')
         setNovoClienteTelefone('')
         await carregarUsuarios()
-        if (resultado.usuario?.id) setClienteSelecionado(resultado.usuario.id)
+        if (resultado.usuario?.id) {
+          setClienteSelecionado(resultado.usuario.id)
+          setBuscaCliente(nomeCadastrado)
+        }
+        // fecha o cadastro automaticamente após o sucesso
+        setMostrarCadastroCliente(false)
         setMensagem('Cliente cadastrado com sucesso!')
       } else {
         setMensagem(resultado.message || 'Erro ao cadastrar cliente')
@@ -92,6 +124,22 @@ export default function Garcom(){
       setMensagem('Erro ao cadastrar cliente')
       setTimeout(()=>setMensagem(''), 3000)
     }
+  }
+
+  // --- busca de cliente por texto (substitui o select) ---
+  const clientesCadastrados = usuarios.filter(u => u.papel === 'CLIENTE')
+
+  function aoMudarBuscaCliente(texto){
+    setBuscaCliente(texto)
+    if (!texto.trim()) { setClienteSelecionado(''); return }
+    // se o texto já não corresponde ao cliente selecionado, deseleciona
+    const sel = clientesCadastrados.find(c => String(c.id) === String(clienteSelecionado))
+    if (sel && semAcento(texto.trim()) !== semAcento(sel.nome)) setClienteSelecionado('')
+  }
+
+  function selecionarCliente(c){
+    setClienteSelecionado(c.id)
+    setBuscaCliente(c.nome)
   }
 
   function adicionarItem(produto){
@@ -143,7 +191,9 @@ export default function Garcom(){
       return
     }
     if (!clienteSelecionado) {
-      setMensagem('Cadastre/selecione um cliente antes de enviar o pedido.')
+      setMensagem(buscaCliente.trim()
+        ? 'Clique no nome do cliente na lista para confirmar a seleção.'
+        : 'Digite o nome do cliente e selecione-o na lista antes de enviar o pedido.')
       setTimeout(()=>setMensagem(''), 3000)
       return
     }
@@ -182,26 +232,19 @@ export default function Garcom(){
     setTimeout(()=>setMensagem(''), 4000)
   }
 
-  async function limparPedidosDoGarcom(){
-    if (!garcomSelecionado) {
-      setMensagem('Selecione um garçom para limpar os pedidos.')
-      setTimeout(()=>setMensagem(''), 3000)
-      return
-    }
-    const nomeGarcom = usuarios.find(u => u.id === Number(garcomSelecionado) || u.id === garcomSelecionado)?.nome || 'garçom'
-    if (!window.confirm(`Excluir TODOS os pedidos do garçom "${nomeGarcom}"? Esta ação não pode ser desfeita.`)) return
-    setMensagem('Limpando pedidos do garçom...')
-    const resultado = await removerPedidosDoGarcom(garcomSelecionado)
-    if (resultado.ok) {
-      setMensagem(`${resultado.removidos} pedido(s) removido(s). Agora você pode excluir o garçom.`)
-      await carregarPedidosProntos()
-    } else {
-      setMensagem(resultado.message || 'Erro ao limpar pedidos do garçom.')
-    }
-    setTimeout(()=>setMensagem(''), 4000)
-  }
-
   const total = itens.reduce((soma, i) => soma + i.produto.preco * i.quantidade, 0)
+
+  // filtro da lista de clientes por nome (sem acento) ou telefone
+  const digitosBuscaCliente = buscaCliente.replace(/\D/g, '')
+  const clientesFiltrados = clientesCadastrados.filter(c => {
+    if (!buscaCliente.trim()) return true
+    if (semAcento(c.nome).includes(semAcento(buscaCliente))) return true
+    return digitosBuscaCliente.length >= 3 && (c.telefone || '').replace(/\D/g, '').includes(digitosBuscaCliente)
+  })
+  const nomeClienteSelecionado = clientesCadastrados.find(c => String(c.id) === String(clienteSelecionado))?.nome || ''
+  // a lista fica oculta quando o campo já mostra o nome do cliente escolhido
+  const listaClientesVisivel = !(clienteSelecionado && semAcento(buscaCliente.trim()) === semAcento(nomeClienteSelecionado))
+  const clientesVisiveis = clientesFiltrados.slice(0, 8)
 
   return (
     <div className="section-grid">
@@ -223,62 +266,107 @@ export default function Garcom(){
             {usuarios.filter(u=>u.papel==='GARCOM').map(u=> <option value={u.id} key={u.id}>{u.nome}</option>)}
           </select>
         </label>
-        <label style={{ display: 'block', marginBottom: '8px' }}>
-          Cliente
-          <select
-            value={clienteSelecionado}
-            onChange={e=>setClienteSelecionado(e.target.value)}
-            style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
-          >
-            <option value="">-- selecione --</option>
-            {usuarios.filter(u=>u.papel==='CLIENTE').map(u=> (
-              <option value={u.id} key={u.id}>{u.nome}{u.telefone ? ` - ${u.telefone}` : ''}</option>
-            ))}
-          </select>
-        </label>
+        <div style={{ marginBottom: '8px' }}>
+          <label style={{ display: 'block' }}>
+            Cliente (digite para encontrar)
+            <input
+              type="text"
+              value={buscaCliente}
+              onChange={e => aoMudarBuscaCliente(e.target.value)}
+              placeholder="Nome ou telefone do cliente"
+              autoComplete="off"
+              style={{ display: 'block', width: '100%', marginTop: '4px', padding: '8px', borderRadius: '6px', border: '1px solid #dbe4ff' }}
+            />
+          </label>
+          {listaClientesVisivel && clientesCadastrados.length > 0 && (
+            <div className="cliente-dropdown">
+              {clientesVisiveis.map(c => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={"cliente-opcao" + (String(c.id) === String(clienteSelecionado) ? ' selecionada' : '')}
+                  onClick={() => selecionarCliente(c)}
+                >
+                  {c.nome}{c.telefone ? ` — ${c.telefone}` : ''}
+                </button>
+              ))}
+              {clientesFiltrados.length > clientesVisiveis.length && (
+                <div style={{ padding: '6px 12px', color: '#666', fontSize: '0.85rem' }}>
+                  +{clientesFiltrados.length - clientesVisiveis.length} — continue digitando para refinar
+                </div>
+              )}
+            </div>
+          )}
+          {listaClientesVisivel && clientesCadastrados.length === 0 && (
+            <div style={{ color: '#d32f2f', marginTop: '4px' }}>
+              Nenhum cliente cadastrado. Use "+ Cadastrar cliente" abaixo.
+            </div>
+          )}
+        </div>
         {usuarios.filter(u=>u.papel==='GARCOM').length === 0 && (
           <div style={{ color: '#d32f2f', marginTop: '8px' }}>
             Nenhum garçom cadastrado. Cadastre um garçom antes de criar pedidos.
           </div>
         )}
-        <button
-          type="button"
-          className="action-button secondary"
-          style={{ marginTop: '8px' }}
-          onClick={limparPedidosDoGarcom}
-          disabled={!garcomSelecionado}
-        >
-          Limpar pedidos do garçom
-        </button>
         <div style={{ marginTop: '8px' }}>{mensagem}</div>
       </div>
       <div className="stats-card">
-        <h3>Cadastrar Cliente</h3>
-        <form onSubmit={cadastrarCliente}>
-          <label>
-            Nome do cliente
-            <input
-              type="text"
-              value={novoClienteNome}
-              onChange={e=>setNovoClienteNome(e.target.value)}
-              placeholder="Digite o nome do cliente"
-              style={{ display: 'block', width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: '1px solid #dbe4ff' }}
-            />
-          </label>
-          <label style={{ display: 'block', marginTop: '8px' }}>
-            Telefone
-            <input
-              type="tel"
-              value={novoClienteTelefone}
-              onChange={e=>setNovoClienteTelefone(e.target.value)}
-              placeholder="(00) 00000-0000"
-              style={{ display: 'block', width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: '1px solid #dbe4ff' }}
-            />
-          </label>
-          <button type="submit" className="action-button" style={{ marginTop: '12px' }} disabled={!novoClienteNome.trim() || !novoClienteTelefone.trim()}>
-            Cadastrar cliente
-          </button>
-        </form>
+        {!mostrarCadastroCliente ? (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button
+              type="button"
+              className="action-button secondary"
+              style={{ marginTop: 0, padding: '8px 16px' }}
+              onClick={() => setMostrarCadastroCliente(true)}
+            >
+              + Cadastrar cliente
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0 }}>Cadastrar Cliente</h3>
+              <button
+                type="button"
+                className="action-button secondary"
+                style={{ marginTop: 0, padding: '6px 12px' }}
+                onClick={() => {
+                  setMostrarCadastroCliente(false)
+                  setNovoClienteNome('')
+                  setNovoClienteTelefone('')
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+            <form onSubmit={cadastrarCliente} style={{ marginTop: '12px' }}>
+              <label>
+                Nome do cliente
+                <input
+                  type="text"
+                  value={novoClienteNome}
+                  onChange={e=>setNovoClienteNome(e.target.value)}
+                  placeholder="Digite o nome do cliente"
+                  style={{ display: 'block', width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: '1px solid #dbe4ff' }}
+                />
+              </label>
+              <label style={{ display: 'block', marginTop: '8px' }}>
+                Telefone
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={novoClienteTelefone}
+                  onChange={e=>setNovoClienteTelefone(mascaraTelefone(e.target.value))}
+                  placeholder="(00) 00000-0000"
+                  style={{ display: 'block', width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: '1px solid #dbe4ff' }}
+                />
+              </label>
+              <button type="submit" className="action-button" style={{ marginTop: '12px' }} disabled={!novoClienteNome.trim() || !novoClienteTelefone.trim()}>
+                Cadastrar cliente
+              </button>
+            </form>
+          </>
+        )}
       </div>
       <div className="tables-section">
         <h3>Mesas</h3>
@@ -329,7 +417,7 @@ export default function Garcom(){
             return <div className="stats-card">Nenhum pedido pronto para entregar.</div>
           }
           return pendentesDeEntrega.map((p, idx) => {
-            const totalPedido = p.itens.reduce((soma, it) => soma + it.produto.preco * it.quantidade, 0)
+            const totalPedido = p.itens.reduce((soma, it) => soma + (it.precoUnitario ?? it.produto.preco) * it.quantidade, 0)
             return (
               <div key={p.id} className="order-card">
                 <div>
@@ -392,10 +480,10 @@ export default function Garcom(){
           {itens.map(i=> (
             <li key={i.produto.id}>
               <div>{i.produto.nome} x{i.quantidade}</div>
-              <div>
-                <button className="secondary" onClick={()=>mudarQuantidade(i.produto.id, -1)}>-</button>
-                <button className="secondary" onClick={()=>mudarQuantidade(i.produto.id, 1)}>+</button>
-                <button className="secondary" onClick={()=>removerItem(i.produto.id)}>Remover</button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button className="action-button secondary" style={{ marginTop: 0, padding: '6px 14px' }} onClick={()=>mudarQuantidade(i.produto.id, -1)}>-</button>
+                <button className="action-button secondary" style={{ marginTop: 0, padding: '6px 14px' }} onClick={()=>mudarQuantidade(i.produto.id, 1)}>+</button>
+                <button className="action-button secondary" style={{ marginTop: 0, padding: '6px 12px', background: '#d32f2f' }} onClick={()=>removerItem(i.produto.id)}>Remover</button>
               </div>
             </li>
           ))}

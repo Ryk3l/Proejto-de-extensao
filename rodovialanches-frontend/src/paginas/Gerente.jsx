@@ -597,7 +597,7 @@ export default function Gerente(){
         ) : (
           <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {pedidosFiltrados.map((p, idx) => {
-              const total = (p.itens || []).reduce((soma, it) => soma + it.produto.preco * it.quantidade, 0)
+              const total = (p.itens || []).reduce((soma, it) => soma + (it.precoUnitario ?? it.produto.preco) * it.quantidade, 0)
               const statusColor = {
                 'NOVO': '#2196f3',
                 'AGUARDANDO_PREPARO': '#ff9800',

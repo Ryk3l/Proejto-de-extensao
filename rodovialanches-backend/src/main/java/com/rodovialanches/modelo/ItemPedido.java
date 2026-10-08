@@ -21,6 +21,11 @@ public class ItemPedido {
 
     private Integer quantidade; // 7. Coluna comum no banco para guardar números inteiros
 
+    // Preço CONGELADO no momento da venda: alterações futuras de preço do produto
+    // não mudam o valor de vendas antigas. Null apenas em pedidos antigos (antes deste campo).
+    @Column(name = "preco_unitario")
+    private Double precoUnitario;
+
     @ManyToOne // 8. Relacionamento: Muitos itens pertencem a um único Pedido
     @JoinColumn(name = "pedido_id") // 9. Cria a coluna de Chave Estrangeira "pedido_id" no banco
     @JsonBackReference // 10. Corta o loop infinito na hora de transformar o objeto em JSON
@@ -33,6 +38,8 @@ public class ItemPedido {
     public void setProduto(Produto produto) { this.produto = produto; }
     public Integer getQuantidade() { return quantidade; }
     public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+    public Double getPrecoUnitario() { return precoUnitario; }
+    public void setPrecoUnitario(Double precoUnitario) { this.precoUnitario = precoUnitario; }
     public Pedido getPedido() { return pedido; }
     public void setPedido(Pedido pedido) { this.pedido = pedido; }
 }

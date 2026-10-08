@@ -37,7 +37,7 @@ export default function Balcao(){
       ) : (
         <div className="section-grid">
           {pedidos.map((p, idx)=> {
-            const total = p.itens.reduce((s,it)=>s + it.produto.preco * it.quantidade,0)
+            const total = p.itens.reduce((s,it)=>s + (it.precoUnitario ?? it.produto.preco) * it.quantidade,0)
             return (
               <div key={p.id} className="order-card">
                 <div><strong>Pedido #{idx + 1}</strong></div>

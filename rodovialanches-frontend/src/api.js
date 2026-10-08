@@ -242,13 +242,3 @@ export async function removerPedido(id){
   const message = await res.text().catch(()=>'')
   return { ok: false, message: message || 'Erro ao remover pedido.' }
 }
-
-export async function removerPedidosDoGarcom(garcomId){
-  const res = await fetch(`${API}/api/pedidos/por-garcom/${garcomId}`,{method:'DELETE'})
-  if (res.ok) {
-    const data = await res.json().catch(()=>({removidos: 0}))
-    return { ok: true, removidos: data.removidos ?? 0 }
-  }
-  const message = await res.text().catch(()=>'')
-  return { ok: false, message: message || 'Erro ao remover pedidos do garçom.' }
-}
