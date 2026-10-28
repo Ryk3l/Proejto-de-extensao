@@ -6,11 +6,11 @@ sequenceDiagram
     participant API
     participant BD as Banco de Dados
 
-    Garcom->>Interface: monta o pedido (mesa, cliente, itens)
+    Garcom->>Interface: monta o pedido (mesa ou delivery, cliente, itens)
     Garcom->>Interface: confirma envio
     Interface->>API: envia novo pedido
-    API->>BD: registra pedido
-    API->>BD: atualiza estoque do produto
+    API->>BD: valida estoque das matérias-primas
+    API->>BD: registra pedido e debita estoque
     BD-->>API: confirma gravação
     API-->>Interface: pedido criado e enviado para a cozinha
     Interface-->>Garcom: exibe confirmação ao garçom

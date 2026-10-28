@@ -1,44 +1,71 @@
 %% Diagrama de Classes — Rodovia Lanches
-%% Mostra as entidades de domínio e a hierarquia de papéis (Garcom, Cozinha,
-%% Balcao, Gerente herdam de Usuario).
+%% Entidades de domínio: Usuario (papel define o perfil de acesso),
+%% Produto, MateriaPrima, Receita (ficha técnica), Pedido, ItemPedido
+%% e StatusPedido (enum de status do ciclo do pedido).
 classDiagram
     class Usuario {
         +Long id
         +String nome
+        +String papel
         +String telefone
+        +String cpf
+        -String senha
     }
-
-    class Garcom
-    class Cozinha
-    class Balcao
-    class Gerente
 
     class Produto {
         +Long id
         +String nome
         +Double preco
-        +Integer quantidade
+    }
+
+    class MateriaPrima {
+        +Long id
+        +String nome
+        +String unidade
+        +BigDecimal quantidade
+        +BigDecimal precoCusto
+    }
+
+    class Receita {
+        +Long id
+        +Produto produto
+        +MateriaPrima materiaPrima
+        +BigDecimal quantidade
+        +String observacao
     }
 
     class Pedido {
         +Long id
         +Usuario garcom
+        +Usuario cliente
         +Integer numeroMesa
-        +List~ItemPedido~ itens
+        +Boolean delivery
+        +StatusPedido status
         +LocalDateTime criadoEm
+        +List~ItemPedido~ itens
     }
 
     class ItemPedido {
         +Long id
         +Produto produto
         +Integer quantidade
+        +Double precoUnitario
     }
 
-    Usuario <|-- Garcom
-    Usuario <|-- Cozinha
-    Usuario <|-- Balcao
-    Usuario <|-- Gerente
+    class StatusPedido {
+        <<enumeration>>
+        NOVO
+        AGUARDANDO_PREPARO
+        EM_PREPARO
+        PRONTO_PARA_PAGAMENTO
+        PAGO
+        CANCELADO
+    }
 
-    Pedido "1" --> "*" ItemPedido : contém
+    Pedido "*" --> "1" Usuario : garcom_registra
+    Pedido "*" --> "1" Usuario : eh_para_cliente
+    Pedido "1" --> "*" ItemPedido : contem
     ItemPedido "*" --> "1" Produto : referencia
-    Pedido "*" --> "1" Garcom : registrado_por
+    Receita "*" --> "1" Produto : faz_para
+    Receita "*" --> "1" MateriaPrima : usa
+    Pedido --> StatusPedido : evolui

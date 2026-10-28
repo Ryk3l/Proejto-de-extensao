@@ -1,23 +1,40 @@
 %% Diagrama Entidade-Relacionamento — Rodovia Lanches (PostgreSQL)
 %% Tipos refletem o schema real do banco (PostgreSQL usa "character varying").
+%% 6 tabelas: usuario, produto, materia_prima, receita, pedido, item_pedido.
 erDiagram
     USUARIO {
         bigint id PK
         varying nome
         varying papel
         varying telefone
+        varying cpf
+        varying senha
     }
     PRODUTO {
         bigint id PK
         varying nome
         double_precision preco
-        integer quantidade
+    }
+    MATERIA_PRIMA {
+        bigint id PK
+        varying nome
+        varying unidade
+        numeric quantidade
+        numeric preco_custo
+    }
+    RECEITA {
+        bigint id PK
+        bigint produto_id FK
+        bigint materia_prima_id FK
+        numeric quantidade
+        varying observacao
     }
     PEDIDO {
         bigint id PK
         bigint garcom_id FK
         bigint cliente_id FK
         integer numero_mesa
+        boolean delivery
         varying status
         timestamp criado_em
     }
@@ -26,9 +43,12 @@ erDiagram
         bigint pedido_id FK
         bigint produto_id FK
         integer quantidade
+        double_precision preco_unitario
     }
 
     PEDIDO ||--o{ ITEM_PEDIDO : contem
     USUARIO ||--o{ PEDIDO : registra_como_garcom
     USUARIO ||--o{ PEDIDO : eh_cliente_de
     PRODUTO ||--o{ ITEM_PEDIDO : esta_em
+    PRODUTO ||--o{ RECEITA : possui_ficha_tecnica
+    MATERIA_PRIMA ||--o{ RECEITA : compoe

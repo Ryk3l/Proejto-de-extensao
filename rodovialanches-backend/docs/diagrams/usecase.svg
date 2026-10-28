@@ -1,149 +1,96 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1050" viewBox="0 0 900 1050" font-family="Arial, sans-serif">
-  <!-- Diagrama de Casos de Uso — Rodovia Lanches
-       Gerente herda dos demais atores (UML generalization).
-       Atores empilhados à esquerda, casos de uso no sistema (à direita). -->
-
-  <style>
-    .actor-line  { stroke: #1F3A60; stroke-width: 2; fill: none; stroke-linecap: round; }
-    .actor-head  { fill: #fff; stroke: #1F3A60; stroke-width: 2; }
-    .actor-name  { font-size: 14px; font-weight: bold; fill: #1F3A60; text-anchor: middle; }
-    .uc          { fill: #E8F4FA; stroke: #2E5C8A; stroke-width: 1.5; }
-    .uc-text     { font-size: 12px; fill: #1F3A60; text-anchor: middle; }
-    .link        { stroke: #777; stroke-width: 1; }
-    .gen         { stroke: #1F3A60; stroke-width: 1.8; fill: none; }
-    .gen-tri     { fill: #fff; stroke: #1F3A60; stroke-width: 1.8; }
-    .sys-box     { fill: none; stroke: #333; stroke-width: 2; }
-    .sys-title   { font-size: 15px; font-style: italic; fill: #333; text-anchor: middle; }
-    .title       { font-size: 20px; font-weight: bold; fill: #1F3A60; text-anchor: middle; }
-    .note        { font-size: 11px; font-style: italic; fill: #555; text-anchor: middle; }
-    .group-label { font-size: 11px; font-style: italic; fill: #999; text-anchor: start; }
-  </style>
-
-  <!-- Título -->
-  <text x="450" y="35" class="title">Diagrama de Casos de Uso — Rodovia Lanches</text>
-  <text x="450" y="55" class="note">Gerente herda das funções Garçom, Cozinha e Balcão (UML)</text>
-
-  <!-- Caixa do sistema -->
-  <rect x="300" y="90" width="380" height="920" rx="6" class="sys-box"/>
-  <text x="490" y="115" class="sys-title">Sistema Rodovia Lanches</text>
-
-  <!-- ========== ATORES À ESQUERDA ========== -->
-
-  <!-- Garçom -->
-  <g id="garcom">
-    <circle cx="100" cy="170" r="14" class="actor-head"/>
-    <line x1="100" y1="184" x2="100" y2="230" class="actor-line"/>
-    <line x1="78"  y1="200" x2="122" y2="200" class="actor-line"/>
-    <line x1="100" y1="230" x2="80"  y2="262" class="actor-line"/>
-    <line x1="100" y1="230" x2="120" y2="262" class="actor-line"/>
-    <text x="100" y="285" class="actor-name">Garçom</text>
-  </g>
-
-  <!-- Cozinha -->
-  <g id="cozinha">
-    <circle cx="100" cy="430" r="14" class="actor-head"/>
-    <line x1="100" y1="444" x2="100" y2="490" class="actor-line"/>
-    <line x1="78"  y1="460" x2="122" y2="460" class="actor-line"/>
-    <line x1="100" y1="490" x2="80"  y2="522" class="actor-line"/>
-    <line x1="100" y1="490" x2="120" y2="522" class="actor-line"/>
-    <text x="100" y="545" class="actor-name">Cozinha</text>
-  </g>
-
-  <!-- Balcão -->
-  <g id="balcao">
-    <circle cx="100" cy="640" r="14" class="actor-head"/>
-    <line x1="100" y1="654" x2="100" y2="700" class="actor-line"/>
-    <line x1="78"  y1="670" x2="122" y2="670" class="actor-line"/>
-    <line x1="100" y1="700" x2="80"  y2="732" class="actor-line"/>
-    <line x1="100" y1="700" x2="120" y2="732" class="actor-line"/>
-    <text x="100" y="755" class="actor-name">Balcão</text>
-  </g>
-
-  <!-- Gerente (filho — herda dos três) -->
-  <g id="gerente">
-    <circle cx="100" cy="880" r="14" class="actor-head"/>
-    <line x1="100" y1="894" x2="100" y2="940" class="actor-line"/>
-    <line x1="78"  y1="910" x2="122" y2="910" class="actor-line"/>
-    <line x1="100" y1="940" x2="80"  y2="972" class="actor-line"/>
-    <line x1="100" y1="940" x2="120" y2="972" class="actor-line"/>
-    <text x="100" y="995" class="actor-name">Gerente</text>
-  </g>
-
-  <!-- ========== HERANÇA (Gerente -|>): triângulo aberto aponta para o "pai" ========== -->
-  <!-- Em UML a seta sai do filho (Gerente) e aponta para o pai (Garçom/Cozinha/Balcão).
-       Como o Gerente herda dos três, três setas saem do Gerente. -->
-
-  <!-- Gerente -> Garçom (seta longa, lateral esquerda) -->
-  <path d="M 175 880 C 220 880, 220 240, 175 240" class="gen"/>
-  <polygon points="178,232 162,240 178,248" class="gen-tri"/>
-
-  <!-- Gerente -> Cozinha -->
-  <path d="M 165 880 C 200 880, 200 480, 165 480" class="gen"/>
-  <polygon points="168,472 152,480 168,488" class="gen-tri"/>
-
-  <!-- Gerente -> Balcão -->
-  <path d="M 155 880 C 180 880, 180 690, 155 690" class="gen"/>
-  <polygon points="158,682 142,690 158,698" class="gen-tri"/>
-
-  <!-- Legenda da herança -->
-  <text x="230" y="880" class="note" text-anchor="start">▷ herda</text>
-
-  <!-- ========== CASOS DE USO ========== -->
-
-  <!-- Grupo Garçom (faixa 140 a 360) -->
-  <ellipse cx="490" cy="170" rx="120" ry="22" class="uc"/>
-  <text x="490" y="175" class="uc-text">Lançar Pedido</text>
-
-  <ellipse cx="490" cy="225" rx="120" ry="22" class="uc"/>
-  <text x="490" y="230" class="uc-text">Cadastrar Cliente</text>
-
-  <ellipse cx="490" cy="280" rx="120" ry="22" class="uc"/>
-  <text x="490" y="285" class="uc-text">Visualizar Pedidos Prontos</text>
-
-  <ellipse cx="490" cy="335" rx="120" ry="22" class="uc"/>
-  <text x="490" y="340" class="uc-text">Marcar Pedido Entregue</text>
-
-  <!-- Grupo Cozinha (faixa 400 a 530) -->
-  <ellipse cx="490" cy="440" rx="120" ry="22" class="uc"/>
-  <text x="490" y="445" class="uc-text">Visualizar Pedidos</text>
-
-  <ellipse cx="490" cy="495" rx="120" ry="22" class="uc"/>
-  <text x="490" y="500" class="uc-text">Marcar como Pronto</text>
-
-  <!-- Grupo Balcão (faixa 600 a 730) -->
-  <ellipse cx="490" cy="650" rx="120" ry="22" class="uc"/>
-  <text x="490" y="655" class="uc-text">Registrar Pagamento</text>
-
-  <!-- Grupo Gerente exclusivos (faixa 800 a 990) -->
-  <ellipse cx="490" cy="850" rx="120" ry="22" class="uc"/>
-  <text x="490" y="855" class="uc-text">Gerenciar Garçons</text>
-
-  <ellipse cx="490" cy="905" rx="120" ry="22" class="uc"/>
-  <text x="490" y="910" class="uc-text">Gerenciar Cardápio</text>
-
-  <ellipse cx="490" cy="960" rx="120" ry="22" class="uc"/>
-  <text x="490" y="965" class="uc-text">Ver Estatísticas e Pedidos</text>
-
-  <!-- ========== LIGAÇÕES ATOR → UC ========== -->
-
-  <!-- Garçom aos seus 4 UCs -->
-  <line x1="120" y1="210" x2="370" y2="170" class="link"/>
-  <line x1="120" y1="210" x2="370" y2="225" class="link"/>
-  <line x1="120" y1="210" x2="370" y2="280" class="link"/>
-  <line x1="120" y1="210" x2="370" y2="335" class="link"/>
-
-  <!-- Cozinha aos seus 2 UCs -->
-  <line x1="120" y1="480" x2="370" y2="440" class="link"/>
-  <line x1="120" y1="480" x2="370" y2="495" class="link"/>
-
-  <!-- Balcão ao seu 1 UC -->
-  <line x1="120" y1="690" x2="370" y2="650" class="link"/>
-
-  <!-- Gerente aos seus 3 UCs EXCLUSIVOS
-       (o Gerente também ACESSA os outros, mas via herança — não precisamos desenhar) -->
-  <line x1="120" y1="920" x2="370" y2="850" class="link"/>
-  <line x1="120" y1="920" x2="370" y2="905" class="link"/>
-  <line x1="120" y1="920" x2="370" y2="960" class="link"/>
-
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1220" viewBox="0 0 1000 1220" font-family="Arial, Helvetica, sans-serif">
+<rect x="0" y="0" width="100%" height="100%" fill="#ffffff"/>
+<text x="500" y="38" font-size="22" font-weight="bold" fill="#1F3A60" text-anchor="middle">Diagrama de Casos de Uso — Rodovia Lanches</text>
+<text x="500" y="62" font-size="14" font-style="italic" fill="#555" text-anchor="middle">Gerente herda de Garçom, Cozinha e Balcão (generalização UML)</text>
+<path d="M20 82 L280 82 L300 102 L300 140 L20 140 Z" fill="#FFF8E1" stroke="#B08D57" stroke-width="1.2" stroke-dasharray="5 3"/>
+<path d="M280 82 L280 102 L300 102" fill="none" stroke="#B08D57" stroke-width="1.2"/>
+<text x="32" y="104" font-size="13" fill="#5D4037">Autenticação com login e senha</text>
+<text x="32" y="122" font-size="13" fill="#5D4037">pré-requisito externo ao sistema.</text>
+<line x1="300" y1="111" x2="320" y2="111" stroke="#B08D57" stroke-width="1.2" stroke-dasharray="4 3"/>
+<rect x="320" y="95" width="660" height="1090" rx="8" fill="none" stroke="#333333" stroke-width="2"/>
+<text x="650" y="122" font-size="16" font-style="italic" fill="#333333" text-anchor="middle">Sistema Rodovia Lanches</text>
+<g id="ator-garcom">
+<circle cx="150" cy="242" r="14" fill="#ffffff" stroke="#1F3A60" stroke-width="2"/>
+<line x1="150" y1="256" x2="150" y2="288" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="122" y1="272" x2="178" y2="272" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="288" x2="126" y2="320" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="288" x2="174" y2="320" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<text x="150" y="348" font-size="16" font-weight="bold" fill="#1F3A60" text-anchor="middle">Garçom</text>
+</g>
+<g id="ator-cozinha">
+<circle cx="150" cy="442" r="14" fill="#ffffff" stroke="#1F3A60" stroke-width="2"/>
+<line x1="150" y1="456" x2="150" y2="488" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="122" y1="472" x2="178" y2="472" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="488" x2="126" y2="520" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="488" x2="174" y2="520" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<text x="150" y="548" font-size="16" font-weight="bold" fill="#1F3A60" text-anchor="middle">Cozinha</text>
+</g>
+<g id="ator-balcão">
+<circle cx="150" cy="582" r="14" fill="#ffffff" stroke="#1F3A60" stroke-width="2"/>
+<line x1="150" y1="596" x2="150" y2="628" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="122" y1="612" x2="178" y2="612" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="628" x2="126" y2="660" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="628" x2="174" y2="660" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<text x="150" y="688" font-size="16" font-weight="bold" fill="#1F3A60" text-anchor="middle">Balcão</text>
+</g>
+<g id="ator-gerente">
+<circle cx="150" cy="877" r="14" fill="#ffffff" stroke="#1F3A60" stroke-width="2"/>
+<line x1="150" y1="891" x2="150" y2="923" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="122" y1="907" x2="178" y2="907" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="923" x2="126" y2="955" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<line x1="150" y1="923" x2="174" y2="955" stroke="#1F3A60" stroke-width="2" stroke-linecap="round"/>
+<text x="150" y="983" font-size="16" font-weight="bold" fill="#1F3A60" text-anchor="middle">Gerente</text>
+</g>
+<line x1="122" y1="907" x2="60" y2="907" stroke="#1F3A60" stroke-width="1.8"/>
+<line x1="60" y1="907" x2="60" y2="272" stroke="#1F3A60" stroke-width="1.8"/>
+<line x1="60" y1="272" x2="102" y2="272" stroke="#1F3A60" stroke-width="1.8"/>
+<polygon points="122,272 102,265 102,279" fill="#ffffff" stroke="#1F3A60" stroke-width="1.8"/>
+<line x1="60" y1="472" x2="102" y2="472" stroke="#1F3A60" stroke-width="1.8"/>
+<polygon points="122,472 102,465 102,479" fill="#ffffff" stroke="#1F3A60" stroke-width="1.8"/>
+<line x1="60" y1="612" x2="102" y2="612" stroke="#1F3A60" stroke-width="1.8"/>
+<polygon points="122,612 102,605 102,619" fill="#ffffff" stroke="#1F3A60" stroke-width="1.8"/>
+<line x1="178" y1="272" x2="460" y2="180" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="272" x2="460" y2="240" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="272" x2="460" y2="300" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="272" x2="460" y2="360" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="472" x2="460" y2="440" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="472" x2="460" y2="500" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="612" x2="460" y2="580" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="612" x2="460" y2="640" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="907" x2="460" y2="730" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="907" x2="460" y2="800" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="907" x2="460" y2="870" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="907" x2="460" y2="940" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="907" x2="460" y2="1010" stroke="#666666" stroke-width="1.2"/>
+<line x1="178" y1="907" x2="460" y2="1080" stroke="#666666" stroke-width="1.2"/>
+<ellipse cx="650" cy="180" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="185" font-size="16" fill="#1F3A60" text-anchor="middle">Lançar pedido (mesa ou delivery)</text>
+<ellipse cx="650" cy="240" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="245" font-size="16" fill="#1F3A60" text-anchor="middle">Consultar produtos com disponibilidade</text>
+<ellipse cx="650" cy="300" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="305" font-size="16" fill="#1F3A60" text-anchor="middle">Cadastrar cliente</text>
+<ellipse cx="650" cy="360" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="365" font-size="16" fill="#1F3A60" text-anchor="middle">Acompanhar pedidos</text>
+<ellipse cx="650" cy="440" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="445" font-size="16" fill="#1F3A60" text-anchor="middle">Consultar pedidos pendentes</text>
+<ellipse cx="650" cy="500" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="505" font-size="16" fill="#1F3A60" text-anchor="middle">Atualizar status (marcar como pronto)</text>
+<ellipse cx="650" cy="580" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="585" font-size="16" fill="#1F3A60" text-anchor="middle">Consultar pedidos prontos</text>
+<ellipse cx="650" cy="640" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="645" font-size="16" fill="#1F3A60" text-anchor="middle">Registrar pagamento</text>
+<text x="650" y="700" font-size="13" font-style="italic" fill="#666666" text-anchor="middle">Casos de uso exclusivos do Gerente</text>
+<ellipse cx="650" cy="730" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="735" font-size="16" fill="#1F3A60" text-anchor="middle">Cadastrar garçom</text>
+<ellipse cx="650" cy="800" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="805" font-size="16" fill="#1F3A60" text-anchor="middle">Cadastrar produto</text>
+<ellipse cx="650" cy="870" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="875" font-size="16" fill="#1F3A60" text-anchor="middle">Cadastrar matéria-prima</text>
+<ellipse cx="650" cy="940" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="945" font-size="16" fill="#1F3A60" text-anchor="middle">Cadastrar receita (ficha técnica)</text>
+<ellipse cx="650" cy="1010" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="1015" font-size="16" fill="#1F3A60" text-anchor="middle">Ajustar estoque de matéria-prima</text>
+<ellipse cx="650" cy="1080" rx="190" ry="22" fill="#EAF3FB" stroke="#2E5C8A" stroke-width="1.5"/>
+<text x="650" y="1085" font-size="16" fill="#1F3A60" text-anchor="middle">Cadastrar acesso (CPF e senha)</text>
 </svg>
